@@ -1,0 +1,138 @@
+{
+  "totalSignups": 5,
+  "totalLogins": 6,
+  "users": {
+    "usr_alex_rivers": {
+      "id": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "signupDate": "2026-09-11T13:02:17.592Z",
+      "loginCount": 6,
+      "lastLogin": "2026-09-20T23:25:27.302Z",
+      "kycTier": 2,
+      "kycStatus": "verified",
+      "role": "investor"
+    },
+    "usr_mtyeiulf": {
+      "id": "usr_mtyeiulf",
+      "email": "alice.custody@gmail.com",
+      "name": "Alice Custody",
+      "signupDate": "2026-09-12T13:09:04.834Z",
+      "loginCount": 0,
+      "lastLogin": "2026-09-12T13:09:04.834Z",
+      "kycTier": 1,
+      "kycStatus": "unverified",
+      "role": "investor"
+    },
+    "usr_mtyeoo4k": {
+      "id": "usr_mtyeoo4k",
+      "email": "bob.investor@gmail.com",
+      "name": "Bob Investor",
+      "signupDate": "2026-09-12T13:13:35.500Z",
+      "loginCount": 0,
+      "lastLogin": "2026-09-12T13:13:35.500Z",
+      "kycTier": 1,
+      "kycStatus": "unverified",
+      "role": "investor"
+    },
+    "6aa979e171953015a7487c7c": {
+      "id": "6aa979e171953015a7487c7c",
+      "email": "satoshinakamoto@gmail.com",
+      "name": "Satoshi Nakamoto",
+      "signupDate": "2026-09-15T17:01:25.688Z",
+      "loginCount": 0,
+      "lastLogin": "2026-09-15T17:01:25.688Z",
+      "kycStatus": "unverified",
+      "role": "investor"
+    },
+    "6aa97bc971953015a7487c7f": {
+      "id": "6aa97bc971953015a7487c7f",
+      "email": "user_isolated_test@gmail.com",
+      "name": "Isolated User Test",
+      "signupDate": "2026-09-15T17:09:31.889Z",
+      "loginCount": 0,
+      "lastLogin": "2026-09-15T17:09:31.889Z",
+      "kycStatus": "unverified",
+      "role": "investor"
+    }
+  },
+  "recentEvents": [
+    {
+      "type": "login",
+      "userId": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "timestamp": "2026-09-20T23:25:27.302Z"
+    },
+    {
+      "type": "signup",
+      "userId": "6aa97bc971953015a7487c7f",
+      "email": "user_isolated_test@gmail.com",
+      "name": "Isolated User Test",
+      "timestamp": "2026-09-15T17:09:31.889Z"
+    },
+    {
+      "type": "signup",
+      "userId": "6aa979e171953015a7487c7c",
+      "email": "satoshinakamoto@gmail.com",
+      "name": "Satoshi Nakamoto",
+      "timestamp": "2026-09-15T17:01:25.688Z"
+    },
+    {
+      "type": "signup",
+      "userId": "usr_mtyeoo4k",
+      "email": "bob.investor@gmail.com",
+      "name": "Bob Investor",
+      "timestamp": "2026-09-12T13:13:35.500Z"
+    },
+    {
+      "type": "signup",
+      "userId": "usr_mtyeiulf",
+      "email": "alice.custody@gmail.com",
+      "name": "Alice Custody",
+      "timestamp": "2026-09-12T13:09:04.834Z"
+    },
+    {
+      "type": "login",
+      "userId": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "timestamp": "2026-09-12T12:42:04.016Z"
+    },
+    {
+      "type": "login",
+      "userId": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "timestamp": "2026-09-12T12:04:23.523Z"
+    },
+    {
+      "type": "login",
+      "userId": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "timestamp": "2026-09-12T12:04:01.949Z"
+    },
+    {
+      "type": "login",
+      "userId": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "timestamp": "2026-09-12T11:41:48.353Z"
+    },
+    {
+      "type": "login",
+      "userId": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "timestamp": "2026-09-12T11:41:07.270Z"
+    },
+    {
+      "type": "login",
+      "userId": "usr_alex_rivers",
+      "email": "alex.rivers@example.com",
+      "name": "Alex Rivers",
+      "timestamp": "2026-09-11T13:02:17.592Z"
+    }
+  ]
+}
