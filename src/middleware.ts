@@ -3,51 +3,30 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = request.cookies.get('bitcoinpro_session')?.value;
-  const isAuthenticated = session === 'active';
 
-  // 1. Admin panel is permanently deleted: any attempt to access /admin redirects to /
-  if (pathname.startsWith('/admin')) {
-    return NextResponse.redirect(new URL('/', request.url));
+  // 1. Allow access to /register (and any subroutes if any)
+  if (pathname === '/register' || pathname.startsWith('/register/')) {
+    return NextResponse.next();
   }
 
-  // 2. The login, signup, and signin routes are strictly inaccessible: redirect directly to /register
+  // 2. Allow API routes so registration forms, price tickers, and support can function
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  // 3. Allow Next.js internals, static assets, and files with extensions (.png, .ico, .svg, .js, .css, etc.)
   if (
-    pathname === '/login' ||
-    pathname.startsWith('/login/') ||
-    pathname === '/signup' ||
-    pathname.startsWith('/signup/') ||
-    pathname === '/signin' ||
-    pathname.startsWith('/signin/')
+    pathname.startsWith('/_next') ||
+    pathname.includes('.') ||
+    pathname === '/favicon.ico'
   ) {
-    return NextResponse.redirect(new URL('/register', request.url));
+    return NextResponse.next();
   }
 
-  // 3. Strict Route Protection:
-  // If user is not logged in, only the main website page (/), register (/register), support (/support), and public assets are accessible.
-  // All other routes (like /dashboard and protected routes) are strictly blocked and redirected to /.
-  if (!isAuthenticated) {
-    const isPublicAllowed =
-      pathname === '/' ||
-      pathname === '/register' ||
-      pathname === '/support' ||
-      pathname.startsWith('/api/') ||
-      pathname.startsWith('/_next') ||
-      pathname.includes('.');
-
-    if (!isPublicAllowed) {
-      const redirectUrl = new URL('/', request.url);
-      redirectUrl.searchParams.set('unauthorized', '1');
-      return NextResponse.redirect(redirectUrl);
-    }
-  }
-
-  // 4. If already logged in and visiting /register, redirect to /dashboard
-  if (isAuthenticated && pathname === '/register') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
-  return NextResponse.next();
+  // 4. Redirect ALL other links/pages strictly to /register (preserving search params like ?ref=)
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.pathname = '/register';
+  return NextResponse.redirect(redirectUrl);
 }
 
 export const config = {

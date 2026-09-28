@@ -34,5 +34,28 @@
     "ticketId": "STARK-VIP-00002",
     "createdAt": "2026-09-21T11:00:25.665Z",
     "syncedToMongo": false
+  },
+  {
+    "fullName": "Marcus Sterling",
+    "email": "marcus.sterling@apex-holdings.com",
+    "phone": "+1 212 555 7890",
+    "phonePrefix": "+1",
+    "phoneNumber": "212 555 7890",
+    "country": "United States",
+    "investmentTier": "$250,000+",
+    "paymentMethod": "Bank Wire (SWIFT / SEPA)",
+    "investorType": "Corporate Treasury",
+    "primaryInterest": "Starknet Bitcoin ZK-Vault & 12.4% APY Yield",
+    "telegramHandle": "@sterling_apex",
+    "referralCode": "VIP-INSTITUTIONAL",
+    "notes": "Allocation test for institutional custody onboarding.",
+    "termsAgreed": true,
+    "priorityStatus": "Institutional",
+    "ipAddress": "::1",
+    "userAgent": "curl/8.18.0",
+    "queueNumber": 3,
+    "ticketId": "STARK-VIP-00003",
+    "createdAt": "2026-09-28T10:56:25.776Z",
+    "syncedToMongo": false
   }
 ]

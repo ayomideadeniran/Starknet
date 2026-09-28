@@ -117,6 +117,7 @@ export async function POST(request: Request) {
       request.headers.get('x-real-ip') ||
       request.headers.get('cf-connecting-ip') ||
       'Direct / Unknown';
+    const userAgent = request.headers.get('user-agent') || 'Direct Browser';
 
     // Assign VIP/Institutional priority based on tier
     const isInstitutional =
@@ -129,11 +130,14 @@ export async function POST(request: Request) {
     // Check if user has already registered
     const existing = await findActualRegistrationByEmail(cleanEmail);
 
-    // Save or update in persistent database (guarantees local JSON storage + MongoDB sync)
+    // Save or update in persistent database (guarantees all inputs sent to MongoDB Atlas registrations collection)
     const savedRecord = await saveActualRegistration({
+      ...body,
       fullName: cleanName,
       email: cleanEmail,
       phone: cleanPhone,
+      phonePrefix: body.phonePrefix || undefined,
+      phoneNumber: body.phoneNumber || undefined,
       country: cleanCountry,
       investmentTier: investmentTier || '$10,000 – $50,000',
       paymentMethod: cleanPaymentMethod,
@@ -142,8 +146,10 @@ export async function POST(request: Request) {
       telegramHandle: telegramHandle ? String(telegramHandle).trim() : undefined,
       referralCode: referralCode ? String(referralCode).trim() : undefined,
       notes: notes ? String(notes).trim() : undefined,
+      termsAgreed: body.termsAgreed ?? true,
       priorityStatus,
       ipAddress,
+      userAgent,
     });
 
     // Get the authentic cumulative registration count
@@ -177,6 +183,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       alreadyRegistered: !!existing,
+      syncedToMongo: !!savedRecord.syncedToMongo,
       message: existing
         ? 'Your VIP registration details have been updated successfully!'
         : 'Successfully registered for Grand Opening VIP Wishlist!',

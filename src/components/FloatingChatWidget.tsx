@@ -1,57 +1,139 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Send, ShieldCheck, ArrowUpRight, MessageCircle, ExternalLink, Sparkles, CheckCircle2 } from 'lucide-react';
+import {
+  X,
+  Send,
+  ShieldCheck,
+  ArrowUpRight,
+  Mail,
+  CheckCircle2,
+  Loader2,
+  ExternalLink,
+  MessageSquare,
+  HelpCircle,
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function FloatingChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [userMessage, setUserMessage] = useState('');
   const [mounted, setMounted] = useState(false);
 
-  // Direct Telegram username from environment or fallback
-  const telegramUsername = (
-    process.env.NEXT_PUBLIC_TELEGRAM_SUPPORT_USERNAME || 
-    process.env.NEXT_PUBLIC_TELEGRAM_USERNAME || 
-    'StarknetSupport'
-  ).replace('@', '').trim();
+  // Form states
+  const [email, setEmail] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState('💰 Deposit & Capital Allocation');
+  const [userMessage, setUserMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [ticketId, setTicketId] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Access user session if logged in
+  const { user } = useAuth();
+
+  const supportEmail =
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@starknet-portal.io';
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const openTelegramDirect = (prefillMessage?: string) => {
-    const textToSend = prefillMessage !== undefined ? prefillMessage : userMessage;
-    const cleanText = encodeURIComponent(textToSend.trim());
-    const directUrl = cleanText
-      ? `https://t.me/${telegramUsername}?text=${cleanText}`
-      : `https://t.me/${telegramUsername}`;
-
-    window.open(directUrl, '_blank', 'noopener,noreferrer');
-  };
-
-  const handleSendToTelegram = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userMessage.trim()) {
-      openTelegramDirect();
-      return;
+  // Pre-fill user email if logged in
+  useEffect(() => {
+    if (user?.email && !email) {
+      setEmail(user.email);
     }
-    openTelegramDirect(userMessage);
-    setUserMessage('');
-    setIsOpen(false);
-  };
+  }, [user, email]);
 
   const quickTopics = [
-    { label: '💰 Deposit & Capital Allocation', msg: 'Hello, I need direct assistance with a deposit or capital allocation on Starknet.' },
-    { label: '⚡ Withdrawal Support', msg: 'Hello, I have an inquiry regarding a withdrawal on my Starknet account.' },
-    { label: '📑 Custodial Agreement Inquiry', msg: 'Hello, I have a question regarding my institutional custody agreement execution.' },
-    { label: '🔐 Account & Security Help', msg: 'Hello, I need help with my account security and authentication.' },
+    {
+      label: '💰 Deposit & Capital Allocation',
+      placeholder: 'Hello, I need assistance with a deposit or capital allocation on my Starknet account...',
+    },
+    {
+      label: '⚡ Withdrawal Support',
+      placeholder: 'Hello, I have an inquiry regarding a withdrawal execution and settlement time...',
+    },
+    {
+      label: '📑 Custodial Agreement Inquiry',
+      placeholder: 'Hello, I have a question regarding institutional custody documentation and vault tiers...',
+    },
+    {
+      label: '🔐 Account & Security Help',
+      placeholder: 'Hello, I need assistance with my account security, 2FA, or verification...',
+    },
   ];
+
+  const handleSelectTopic = (topic: { label: string; placeholder: string }) => {
+    setSelectedTopic(topic.label);
+    if (!userMessage.trim()) {
+      setUserMessage(topic.placeholder);
+    }
+  };
+
+  const handleSendEmailInquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    const trimmedEmail = email.trim();
+    const trimmedMessage = userMessage.trim();
+
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      setErrorMessage('Please enter a valid email address so we can reply.');
+      return;
+    }
+
+    if (!trimmedMessage) {
+      setErrorMessage('Please enter your question or inquiry details.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/support/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: user?.name || trimmedEmail.split('@')[0],
+          email: trimmedEmail,
+          category: selectedTopic,
+          subject: selectedTopic,
+          message: trimmedMessage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setTicketId(data.ticketId || `SPT-${Math.floor(100000 + Math.random() * 900000)}`);
+        setIsSuccess(true);
+      } else {
+        setErrorMessage(data.error || 'Failed to dispatch inquiry. Please try again.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Network error occurred. Please try again or use direct mailto.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetForm = () => {
+    setIsSuccess(false);
+    setTicketId('');
+    setUserMessage('');
+    setErrorMessage('');
+  };
+
+  const directMailtoUrl = `mailto:${supportEmail}?subject=${encodeURIComponent(
+    `[Support Desk] ${selectedTopic}`
+  )}&body=${encodeURIComponent(userMessage || 'Hello Support Team,')}`;
 
   if (!mounted) return null;
 
   return (
     <>
-      {/* Floating Telegram Support Launcher */}
+      {/* Floating Support Desk Launcher */}
       <div
         style={{
           position: 'fixed',
@@ -69,41 +151,50 @@ export default function FloatingChatWidget() {
           <button
             onClick={() => setIsOpen(true)}
             style={{
-              background: 'rgba(15, 23, 42, 0.92)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid rgba(34, 158, 217, 0.4)',
+              background: 'rgba(15, 23, 42, 0.94)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(56, 189, 248, 0.35)',
               color: '#ffffff',
-              padding: '0.45rem 0.9rem',
+              padding: '0.45rem 0.95rem',
               borderRadius: '99px',
               fontSize: '0.78rem',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              gap: '0.45rem',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+              gap: '0.5rem',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
           >
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }}></span>
-            <span>Direct Telegram Support</span>
-            <ArrowUpRight size={13} style={{ color: '#229ED9' }} />
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#22c55e',
+                boxShadow: '0 0 8px #22c55e',
+                display: 'inline-block',
+              }}
+            />
+            <span>Direct Email Support Desk</span>
+            <ArrowUpRight size={13} style={{ color: '#38bdf8' }} />
           </button>
         )}
 
         {/* Main Floating Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? 'Close Telegram Support' : 'Open Direct Telegram Support'}
+          aria-label={isOpen ? 'Close Support Desk' : 'Open Support Desk'}
           style={{
             width: '60px',
             height: '60px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #229ED9 0%, #0088cc 100%)',
+            background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
             color: '#fff',
             border: 'none',
-            boxShadow: '0 8px 28px rgba(34, 158, 217, 0.5)',
+            boxShadow: '0 8px 28px rgba(2, 132, 199, 0.45)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -112,30 +203,23 @@ export default function FloatingChatWidget() {
             transform: isOpen ? 'scale(0.92)' : 'scale(1)',
           }}
         >
-          {isOpen ? (
-            <X size={26} />
-          ) : (
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m22 2-7 20-4-9-9-4Z"/>
-              <path d="M22 2 11 13"/>
-            </svg>
-          )}
+          {isOpen ? <X size={26} /> : <Mail size={26} />}
         </button>
       </div>
 
-      {/* Direct Telegram Support Modal Card */}
+      {/* Direct Email Support Modal Card */}
       {isOpen && (
         <div
           style={{
             position: 'fixed',
-            bottom: '100px',
+            bottom: '96px',
             right: '24px',
             width: 'calc(100vw - 48px)',
-            maxWidth: '410px',
+            maxWidth: '430px',
             background: '#0d131f',
-            border: '1px solid rgba(34, 158, 217, 0.35)',
+            border: '1px solid rgba(56, 189, 248, 0.28)',
             borderRadius: '1.25rem',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+            boxShadow: '0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05)',
             zIndex: 9998,
             display: 'flex',
             flexDirection: 'column',
@@ -147,7 +231,7 @@ export default function FloatingChatWidget() {
           <div
             style={{
               padding: '1.25rem 1.5rem',
-              background: 'linear-gradient(180deg, rgba(34, 158, 217, 0.18) 0%, rgba(13, 19, 31, 0.8) 100%)',
+              background: 'linear-gradient(180deg, rgba(2, 132, 199, 0.2) 0%, rgba(13, 19, 31, 0.85) 100%)',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
               alignItems: 'center',
@@ -159,27 +243,50 @@ export default function FloatingChatWidget() {
                 style={{
                   width: '42px',
                   height: '42px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #229ED9 0%, #0088cc 100%)',
+                  borderRadius: '0.75rem',
+                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#fff',
-                  boxShadow: '0 4px 14px rgba(34, 158, 217, 0.4)',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)',
                 }}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m22 2-7 20-4-9-9-4Z"/>
-                  <path d="M22 2 11 13"/>
-                </svg>
+                <Mail size={22} />
               </div>
               <div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', margin: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  Direct Telegram Chat
+                <h3
+                  style={{
+                    fontSize: '1.05rem',
+                    fontWeight: 800,
+                    color: '#ffffff',
+                    margin: 0,
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  Direct Support Desk
                 </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: '#4ade80', marginTop: '0.15rem' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span>
-                  <span>Human Support Desk &bull; Online</span>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    fontSize: '0.76rem',
+                    color: '#4ade80',
+                    marginTop: '0.15rem',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: '#22c55e',
+                      boxShadow: '0 0 6px #22c55e',
+                      display: 'inline-block',
+                    }}
+                  />
+                  <span>Human Desk &bull; Responds in &lt;15 mins</span>
                 </div>
               </div>
             </div>
@@ -205,158 +312,384 @@ export default function FloatingChatWidget() {
             </button>
           </div>
 
-          {/* Body */}
-          <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '480px', overflowY: 'auto' }}>
-            {/* Direct human desk badge */}
-            <div
-              style={{
-                padding: '0.9rem 1rem',
-                borderRadius: '0.85rem',
-                background: 'rgba(34, 158, 217, 0.08)',
-                border: '1px solid rgba(34, 158, 217, 0.25)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.75rem',
-              }}
-            >
-              <ShieldCheck size={20} style={{ color: '#229ED9', flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '0.825rem', color: '#cbd5e1', lineHeight: 1.45 }}>
-                <strong style={{ color: '#ffffff' }}>Direct 1-on-1 Human Support:</strong> No automated bots. Chat directly with our private trading and compliance desk on Telegram.
-              </div>
-            </div>
-
-            {/* Direct 1-Click Launch Button */}
-            <button
-              type="button"
-              onClick={() => openTelegramDirect()}
-              style={{
-                width: '100%',
-                padding: '0.95rem 1.25rem',
-                borderRadius: '0.85rem',
-                background: 'linear-gradient(135deg, #229ED9 0%, #0088cc 100%)',
-                color: '#ffffff',
-                border: 'none',
-                fontWeight: 800,
-                fontSize: '0.95rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.65rem',
-                boxShadow: '0 8px 24px rgba(34, 158, 217, 0.4)',
-                transition: 'transform 0.15s ease',
-              }}
-              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
-              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m22 2-7 20-4-9-9-4Z"/>
-                <path d="M22 2 11 13"/>
-              </svg>
-              <span>Open Chat on Telegram (@{telegramUsername})</span>
-              <ExternalLink size={16} />
-            </button>
-
-            {/* Quick topics */}
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.6rem' }}>
-                Quick Direct Inquiries
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {quickTopics.map((topic, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => openTelegramDirect(topic.msg)}
-                    style={{
-                      width: '100%',
-                      padding: '0.7rem 0.9rem',
-                      borderRadius: '0.65rem',
-                      background: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      color: '#e2e8f0',
-                      fontSize: '0.825rem',
-                      fontWeight: 600,
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      transition: 'all 0.15s ease',
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = 'rgba(34, 158, 217, 0.12)';
-                      e.currentTarget.style.borderColor = 'rgba(34, 158, 217, 0.35)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                    }}
-                  >
-                    <span>{topic.label}</span>
-                    <ArrowUpRight size={14} style={{ color: '#229ED9' }} />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Type custom message to send directly to Telegram */}
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
-                Or Type Your Question
-              </div>
-              <form onSubmit={handleSendToTelegram} style={{ display: 'flex', gap: '0.5rem' }}>
-                <input
-                  type="text"
-                  placeholder="Type message to open on Telegram..."
-                  value={userMessage}
-                  onChange={(e) => setUserMessage(e.target.value)}
+          {/* Modal Body */}
+          <div
+            style={{
+              padding: '1.25rem 1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.15rem',
+              maxHeight: '520px',
+              overflowY: 'auto',
+            }}
+          >
+            {isSuccess ? (
+              /* Success confirmation state */
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  padding: '1.5rem 0.5rem',
+                  gap: '1rem',
+                }}
+              >
+                <div
                   style={{
-                    flex: 1,
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.65rem',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    color: '#ffffff',
-                    outline: 'none',
-                    fontSize: '0.85rem',
-                  }}
-                />
-                <button
-                  type="submit"
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '0.65rem',
-                    background: '#229ED9',
-                    color: '#ffffff',
-                    border: 'none',
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '50%',
+                    background: 'rgba(34, 197, 94, 0.15)',
+                    border: '1px solid rgba(34, 197, 94, 0.35)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer',
-                    flexShrink: 0,
+                    color: '#22c55e',
                   }}
-                  title="Send to Telegram"
                 >
-                  <Send size={16} />
-                </button>
-              </form>
-            </div>
+                  <CheckCircle2 size={32} />
+                </div>
+
+                <div>
+                  <h4
+                    style={{
+                      fontSize: '1.15rem',
+                      fontWeight: 800,
+                      color: '#ffffff',
+                      margin: '0 0 0.35rem 0',
+                    }}
+                  >
+                    Inquiry Dispatched!
+                  </h4>
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      padding: '0.2rem 0.65rem',
+                      borderRadius: '0.4rem',
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      color: '#38bdf8',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      fontFamily: 'monospace',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Ticket #{ticketId}
+                  </div>
+                  <p
+                    style={{
+                      fontSize: '0.825rem',
+                      color: '#94a3b8',
+                      lineHeight: 1.5,
+                      margin: 0,
+                    }}
+                  >
+                    Our private compliance and operations desk has received your ticket. We have logged your request and a specialist will reply directly to <strong style={{ color: '#ffffff' }}>{email}</strong>.
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.65rem',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    fontSize: '0.78rem',
+                    color: '#cbd5e1',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ color: '#64748b', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.2rem' }}>
+                    Topic Logged
+                  </div>
+                  <div style={{ fontWeight: 600 }}>{selectedTopic}</div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.65rem', width: '100%', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={handleResetForm}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      borderRadius: '0.65rem',
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      color: '#ffffff',
+                      fontSize: '0.825rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    New Inquiry
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      borderRadius: '0.65rem',
+                      background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                      border: 'none',
+                      color: '#ffffff',
+                      fontSize: '0.825rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Email submission form */
+              <>
+                {/* Direct human desk badge */}
+                <div
+                  style={{
+                    padding: '0.85rem 1rem',
+                    borderRadius: '0.85rem',
+                    background: 'rgba(2, 132, 199, 0.08)',
+                    border: '1px solid rgba(2, 132, 199, 0.25)',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <ShieldCheck size={20} style={{ color: '#38bdf8', flexShrink: 0, marginTop: '2px' }} />
+                  <div style={{ fontSize: '0.81rem', color: '#cbd5e1', lineHeight: 1.45 }}>
+                    <strong style={{ color: '#ffffff' }}>Direct 1-on-1 Human Support:</strong> No automated bots. Submit your question directly to our institutional desk via email.
+                  </div>
+                </div>
+
+                {/* Quick topics picker */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: '0.725rem',
+                      fontWeight: 700,
+                      color: '#94a3b8',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Quick Direct Inquiries
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    {quickTopics.map((topic, i) => {
+                      const isSelected = selectedTopic === topic.label;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => handleSelectTopic(topic)}
+                          style={{
+                            width: '100%',
+                            padding: '0.65rem 0.85rem',
+                            borderRadius: '0.65rem',
+                            background: isSelected
+                              ? 'rgba(2, 132, 199, 0.16)'
+                              : 'rgba(255, 255, 255, 0.03)',
+                            border: isSelected
+                              ? '1px solid rgba(56, 189, 248, 0.45)'
+                              : '1px solid rgba(255, 255, 255, 0.07)',
+                            color: isSelected ? '#ffffff' : '#cbd5e1',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <span>{topic.label}</span>
+                          <span
+                            style={{
+                              fontSize: '0.7rem',
+                              color: isSelected ? '#38bdf8' : '#64748b',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {isSelected ? '✓ Selected' : 'Select'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Form fields */}
+                <form onSubmit={handleSendEmailInquiry} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {/* Email address field */}
+                  <div>
+                    <label
+                      style={{
+                        display: 'block',
+                        fontSize: '0.725rem',
+                        fontWeight: 700,
+                        color: '#94a3b8',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        marginBottom: '0.35rem',
+                      }}
+                    >
+                      Your Contact Email
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="email"
+                        required
+                        placeholder="you@domain.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.7rem 0.9rem',
+                          borderRadius: '0.65rem',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          color: '#ffffff',
+                          outline: 'none',
+                          fontSize: '0.85rem',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Message field */}
+                  <div>
+                    <label
+                      style={{
+                        display: 'block',
+                        fontSize: '0.725rem',
+                        fontWeight: 700,
+                        color: '#94a3b8',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        marginBottom: '0.35rem',
+                      }}
+                    >
+                      Your Question or Inquiry
+                    </label>
+                    <textarea
+                      required
+                      rows={3}
+                      placeholder="Type your question or transaction details here..."
+                      value={userMessage}
+                      onChange={(e) => setUserMessage(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 0.9rem',
+                        borderRadius: '0.65rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        color: '#ffffff',
+                        outline: 'none',
+                        fontSize: '0.85rem',
+                        resize: 'none',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  {/* Error banner if any */}
+                  {errorMessage && (
+                    <div
+                      style={{
+                        padding: '0.6rem 0.85rem',
+                        borderRadius: '0.5rem',
+                        background: 'rgba(239, 68, 68, 0.12)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        color: '#f87171',
+                        fontSize: '0.78rem',
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {errorMessage}
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    style={{
+                      width: '100%',
+                      padding: '0.85rem 1.25rem',
+                      borderRadius: '0.75rem',
+                      background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.92rem',
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.65rem',
+                      boxShadow: '0 8px 24px rgba(2, 132, 199, 0.4)',
+                      opacity: isSubmitting ? 0.75 : 1,
+                      transition: 'transform 0.15s ease',
+                    }}
+                    onMouseDown={(e) => !isSubmitting && (e.currentTarget.style.transform = 'scale(0.98)')}
+                    onMouseUp={(e) => !isSubmitting && (e.currentTarget.style.transform = 'scale(1)')}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        <span>Sending to Support Desk...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send size={16} />
+                        <span>Send Support Inquiry</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Optional direct mail app launcher */}
+                  <div style={{ textAlign: 'center', marginTop: '0.2rem' }}>
+                    <a
+                      href={directMailtoUrl}
+                      style={{
+                        fontSize: '0.74rem',
+                        color: '#38bdf8',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                      }}
+                    >
+                      <span>Prefer your default mail app? Click to launch mailto</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
 
           {/* Footer note */}
           <div
             style={{
               padding: '0.75rem 1.25rem',
-              background: 'rgba(0, 0, 0, 0.3)',
+              background: 'rgba(0, 0, 0, 0.35)',
               borderTop: '1px solid rgba(255, 255, 255, 0.06)',
               fontSize: '0.72rem',
               color: '#64748b',
               textAlign: 'center',
             }}
           >
-            Encrypted End-to-End via Telegram MTProto &bull; Direct Human Contact
+            256-bit Encrypted &bull; Institutional Support Desk &bull; Direct Human Contact
           </div>
         </div>
       )}

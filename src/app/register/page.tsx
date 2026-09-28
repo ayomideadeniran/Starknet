@@ -232,6 +232,8 @@ export default function GrandOpeningWishlistPage() {
         fullName: fullName.trim(),
         email: email.trim().toLowerCase(),
         phone: `${phonePrefix} ${phoneNumber.trim()}`,
+        phonePrefix,
+        phoneNumber: phoneNumber.trim(),
         country,
         investmentTier,
         paymentMethod,
@@ -240,6 +242,7 @@ export default function GrandOpeningWishlistPage() {
         telegramHandle: telegramHandle.trim() || undefined,
         referralCode: referralCode.trim() || undefined,
         notes: notes.trim() || undefined,
+        termsAgreed: true,
       };
 
       const res = await fetch('/api/wishlist', {
