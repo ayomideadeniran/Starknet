@@ -15,6 +15,7 @@ export interface DcaCalculationParams {
   frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
   durationMonths: number;
   customBtcPrice?: number;
+  annualInterestPercent?: number;
 }
 
 export interface DcaCalculationResult {
@@ -25,6 +26,7 @@ export interface DcaCalculationResult {
   currentPortfolioValueUsd: number;
   unrealizedProfitLossUsd: number;
   unrealizedProfitLossPercent: number;
+  annualInterestPercent: number;
   breakdown: Array<{
     period: number;
     dateLabel: string;
@@ -36,8 +38,10 @@ export interface DcaCalculationResult {
 
 export interface LumpSumCalculationParams {
   amountInvestedUsd: number;
-  purchasePriceUsd: number;
+  purchasePriceUsd?: number;
   currentPriceUsd: number;
+  durationMonths?: number;
+  annualInterestPercent?: number;
 }
 
 export interface LumpSumCalculationResult {
@@ -46,6 +50,8 @@ export interface LumpSumCalculationResult {
   currentValueUsd: number;
   unrealizedProfitLossUsd: number;
   unrealizedProfitLossPercent: number;
+  annualInterestPercent: number;
+  durationMonths: number;
 }
 
 export interface QuizQuestion {

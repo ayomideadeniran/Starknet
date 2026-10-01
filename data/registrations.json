@@ -15,7 +15,7 @@
     "queueNumber": 1,
     "ticketId": "STARK-VIP-00001",
     "createdAt": "2026-09-21T11:00:09.314Z",
-    "syncedToMongo": false
+    "syncedToMongo": true
   },
   {
     "fullName": "Lady Beatrice",
@@ -33,7 +33,7 @@
     "queueNumber": 2,
     "ticketId": "STARK-VIP-00002",
     "createdAt": "2026-09-21T11:00:25.665Z",
-    "syncedToMongo": false
+    "syncedToMongo": true
   },
   {
     "fullName": "Marcus Sterling",
@@ -56,6 +56,27 @@
     "queueNumber": 3,
     "ticketId": "STARK-VIP-00003",
     "createdAt": "2026-09-28T10:56:25.776Z",
-    "syncedToMongo": false
+    "syncedToMongo": true
+  },
+  {
+    "fullName": "David K. Miller",
+    "email": "david.miller@apex-ventures.io",
+    "phone": "+1 415 890 2345",
+    "phonePrefix": "+1",
+    "phoneNumber": "415 890 2345",
+    "country": "United States",
+    "investmentTier": "$10,000 – $50,000",
+    "paymentMethod": "USDT / USDC (Stablecoins)",
+    "investorType": "Individual / Private Investor ($200+ Starter)",
+    "primaryInterest": "Starknet Bitcoin ZK-Vault & 12.4% APY Yield",
+    "telegramHandle": "@david_miller_vip",
+    "referralCode": "VIP-LAUNCH-2026",
+    "notes": "Example registration generated for testing MongoDB Atlas integration.",
+    "termsAgreed": true,
+    "priorityStatus": "VIP",
+    "queueNumber": 4,
+    "ticketId": "STARK-VIP-00004",
+    "createdAt": "2026-09-28T23:07:06.298Z",
+    "syncedToMongo": true
   }
 ]

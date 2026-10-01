@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ShieldCheck, Lock, ExternalLink, Heart } from 'lucide-react';
 
 export default function Footer() {
+  const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@starknet-portal.io';
   return (
     <footer
       style={{
@@ -73,7 +74,7 @@ export default function Footer() {
               <li><a href="#fees" style={{ transition: 'color 0.15s' }}>Fee Schedule &amp; Gas Savings</a></li>
               <li><a href="#risks" style={{ transition: 'color 0.15s' }}>Custody &amp; Key Management</a></li>
               <li><a href="#faq" style={{ transition: 'color 0.15s' }}>Anti-Phishing &amp; FAQ</a></li>
-              <li><Link href="/support" style={{ transition: 'color 0.15s' }}>Help &amp; Support Center</Link></li>
+              <li><a href={`mailto:${supportEmail}?subject=${encodeURIComponent('Starknet Protocol Support Inquiry')}`} style={{ transition: 'color 0.15s' }}>Email Customer Support</a></li>
             </ul>
           </div>
 

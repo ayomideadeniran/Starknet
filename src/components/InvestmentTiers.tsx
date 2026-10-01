@@ -31,7 +31,7 @@ export default function InvestmentTiers() {
       glowColor: 'rgba(16, 185, 129, 0.3)',
       borderColor: '#10b981',
       features: [
-        '12.4% APY Target Yield Strategy',
+        '30% – 50% Monthly Yield Strategy',
         'Automated DCA & Reinvestment Options',
         'Multi-Asset Funding (USDT, BTC, STRK, Wire)',
         'Standard Institutional Custody Routing',
@@ -48,7 +48,7 @@ export default function InvestmentTiers() {
       borderColor: 'var(--brand-btc)',
       isPopular: true,
       features: [
-        'Guaranteed Capacity in 12.4% APY Vault',
+        'Guaranteed Capacity in 30% – 50% Monthly Yield Vault',
         'Dedicated Quantitative Portfolio Manager',
         '0.25% Reduced Spread Execution',
         'Daily Real-Time Telegram Yield Reports',

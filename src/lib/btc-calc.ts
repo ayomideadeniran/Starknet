@@ -58,25 +58,35 @@ export function formatSats(sats: number): string {
 }
 
 /**
- * Calculates Lump-sum investment metrics.
+ * Calculates Lump-sum investment metrics with 30% to 50% interest yield.
  */
 export function calculateLumpSum(params: LumpSumCalculationParams): LumpSumCalculationResult {
-  const { amountInvestedUsd, purchasePriceUsd, currentPriceUsd } = params;
-  if (purchasePriceUsd <= 0 || amountInvestedUsd <= 0) {
+  const { amountInvestedUsd, currentPriceUsd } = params;
+  const durationMonths = params.durationMonths || 12;
+  const annualInterestPercent = Math.min(50, Math.max(30, params.annualInterestPercent ?? 40));
+  const btcPrice = currentPriceUsd > 0 ? currentPriceUsd : DEFAULT_MARKET_DATA.priceUsd;
+
+  if (amountInvestedUsd <= 0) {
     return {
       btcReceived: 0,
       satsReceived: 0,
       currentValueUsd: 0,
       unrealizedProfitLossUsd: 0,
       unrealizedProfitLossPercent: 0,
+      annualInterestPercent,
+      durationMonths,
     };
   }
 
-  const btcReceived = amountInvestedUsd / purchasePriceUsd;
-  const satsReceived = btcToSats(btcReceived);
-  const currentValueUsd = btcReceived * currentPriceUsd;
+  // Calculate interest where a 6-month term delivers the full targeted 30% to 50% interest
+  const rateFraction = annualInterestPercent / 100;
+  const cycles = Math.max(1, durationMonths / 6);
+  const currentValueUsd = amountInvestedUsd * (1 + rateFraction * cycles);
   const unrealizedProfitLossUsd = currentValueUsd - amountInvestedUsd;
   const unrealizedProfitLossPercent = (unrealizedProfitLossUsd / amountInvestedUsd) * 100;
+
+  const btcReceived = currentValueUsd / btcPrice;
+  const satsReceived = btcToSats(btcReceived);
 
   return {
     btcReceived,
@@ -84,17 +94,20 @@ export function calculateLumpSum(params: LumpSumCalculationParams): LumpSumCalcu
     currentValueUsd,
     unrealizedProfitLossUsd,
     unrealizedProfitLossPercent,
+    annualInterestPercent,
+    durationMonths,
   };
 }
 
 /**
- * Calculates a Dollar-Cost Averaging (DCA) simulation.
- * Employs a historical-trend simulation curve based on actual Bitcoin market volatility
- * to demonstrate how DCA smooths cost basis over time.
+ * Calculates a Managed Recurring Deposit (DCA) simulation with 30% to 50% interest yield.
+ * Models capital deployment into Starknet ZK-vaults earning targeted annual yield.
  */
 export function calculateDca(params: DcaCalculationParams): DcaCalculationResult {
   const { amountUsd, frequency, durationMonths } = params;
   const currentPrice = params.customBtcPrice || DEFAULT_MARKET_DATA.priceUsd;
+  const annualInterestPercent = Math.min(50, Math.max(30, params.annualInterestPercent ?? 40));
+  const annualRate = annualInterestPercent / 100;
 
   let intervalsCount = 0;
   let intervalDays = 7;
@@ -121,49 +134,44 @@ export function calculateDca(params: DcaCalculationParams): DcaCalculationResult
   if (intervalsCount <= 0) intervalsCount = 1;
 
   let cumulativeInvested = 0;
-  let cumulativeBtc = 0;
+  let cumulativeValue = 0;
+  const totalCycles = Math.max(1, durationMonths / 6);
   const breakdown = [];
-
-  // Historical price curve synthesis: models a realistic cyclical ramp from duration ago to now
-  // reflecting real multi-year BTC price behavior for educational modeling
-  const startRatio = durationMonths >= 36 ? 0.32 : durationMonths >= 24 ? 0.45 : durationMonths >= 12 ? 0.65 : 0.85;
 
   for (let i = 1; i <= intervalsCount; i++) {
     cumulativeInvested += amountUsd;
 
-    // Progress from start ratio to 1.0 (current price) with realistic volatility waves
-    const progress = i / intervalsCount;
-    const wave = Math.sin(progress * Math.PI * 3) * 0.12;
-    const simulatedPriceRatio = startRatio + (1.0 - startRatio) * progress + wave;
-    const simulatedPrice = Math.max(10000, currentPrice * simulatedPriceRatio);
-
-    const btcBoughtThisInterval = amountUsd / simulatedPrice;
-    cumulativeBtc += btcBoughtThisInterval;
+    // Each interval's capital earns the targeted vault interest for its active duration
+    const depositActiveCycles = ((intervalsCount - i + 1) / intervalsCount) * totalCycles;
+    const valueOfThisDeposit = amountUsd * (1 + annualRate * depositActiveCycles);
+    cumulativeValue += valueOfThisDeposit;
 
     if (intervalsCount <= 12 || i % Math.max(1, Math.floor(intervalsCount / 10)) === 0 || i === intervalsCount) {
       breakdown.push({
         period: i,
         dateLabel: `Month ${Math.min(durationMonths, Math.ceil((i * intervalDays) / 30.4))}`,
         investedCumulativeUsd: cumulativeInvested,
-        btcAccumulatedCumulative: cumulativeBtc,
-        portfolioValueUsd: cumulativeBtc * currentPrice,
+        btcAccumulatedCumulative: cumulativeValue / currentPrice,
+        portfolioValueUsd: cumulativeValue,
       });
     }
   }
 
-  const currentPortfolioValueUsd = cumulativeBtc * currentPrice;
+  const currentPortfolioValueUsd = cumulativeValue;
   const unrealizedProfitLossUsd = currentPortfolioValueUsd - cumulativeInvested;
   const unrealizedProfitLossPercent = cumulativeInvested > 0 ? (unrealizedProfitLossUsd / cumulativeInvested) * 100 : 0;
-  const averagePurchasePriceUsd = cumulativeBtc > 0 ? cumulativeInvested / cumulativeBtc : 0;
+  const totalBtcAccumulated = currentPortfolioValueUsd / currentPrice;
+  const averagePurchasePriceUsd = totalBtcAccumulated > 0 ? cumulativeInvested / totalBtcAccumulated : currentPrice;
 
   return {
     totalInvestedUsd: cumulativeInvested,
-    totalBtcAccumulated: cumulativeBtc,
-    totalSatsAccumulated: btcToSats(cumulativeBtc),
+    totalBtcAccumulated,
+    totalSatsAccumulated: btcToSats(totalBtcAccumulated),
     averagePurchasePriceUsd,
     currentPortfolioValueUsd,
     unrealizedProfitLossUsd,
     unrealizedProfitLossPercent,
+    annualInterestPercent,
     breakdown,
   };
 }

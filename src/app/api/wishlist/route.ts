@@ -142,7 +142,7 @@ export async function POST(request: Request) {
       investmentTier: investmentTier || '$10,000 – $50,000',
       paymentMethod: cleanPaymentMethod,
       investorType: investorType || 'Individual / Private Investor ($200+ Starter)',
-      primaryInterest: primaryInterest || 'Starknet Bitcoin ZK-Vault & 12.4% APY Yield',
+      primaryInterest: primaryInterest || 'Starknet Bitcoin ZK-Vault & 30% – 50% Monthly Yield',
       telegramHandle: telegramHandle ? String(telegramHandle).trim() : undefined,
       referralCode: referralCode ? String(referralCode).trim() : undefined,
       notes: notes ? String(notes).trim() : undefined,

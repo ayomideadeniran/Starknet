@@ -1,9 +1,18 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Calculator, Calendar, ArrowRight, RefreshCw, AlertCircle, Zap, Shield, TrendingUp, TrendingDown, DollarSign, Sparkles } from 'lucide-react';
+import {
+  Calculator,
+  ArrowRight,
+  TrendingUp,
+  Sparkles,
+  Percent,
+  Calendar,
+  ShieldCheck,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
-import { calculateDca, calculateLumpSum, formatBtc, formatSats, formatUsd } from '@/lib/btc-calc';
+import { formatUsd, formatBtc, DEFAULT_MARKET_DATA } from '@/lib/btc-calc';
 import { BtcMarketData } from '@/lib/types';
 
 interface DcaCalculatorProps {
@@ -12,536 +21,498 @@ interface DcaCalculatorProps {
   onToggleSatsMode: () => void;
 }
 
-export default function DcaCalculator({ marketData, satsMode, onToggleSatsMode }: DcaCalculatorProps) {
-  const [calculatorMode, setCalculatorMode] = useState<'dca' | 'lumpsum'>('dca');
+export default function DcaCalculator({ marketData }: DcaCalculatorProps) {
+  // Input States: Single Investment Amount, 30% to 50% monthly interest, duration in months
+  const [amount, setAmount] = useState<number>(200);
+  const [monthlyInterestRate, setMonthlyInterestRate] = useState<number>(30); // 30% to 50% monthly
+  const [durationMonths, setDurationMonths] = useState<number>(1); // 1, 3, 6, 12 months
 
-  // DCA State
-  const [dcaAmount, setDcaAmount] = useState<number>(1000);
-  const [dcaFrequency, setDcaFrequency] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('weekly');
-  const [dcaDurationMonths, setDcaDurationMonths] = useState<number>(24);
+  // Calculation Logic: 30% to 50% EVERY MONTH directly on your invested capital
+  const calculation = useMemo(() => {
+    const validAmount = Math.max(200, Number(amount) || 0);
+    const validMonthlyRate = Math.min(50, Math.max(30, Number(monthlyInterestRate) || 30));
+    const monthlyRateFraction = validMonthlyRate / 100; // e.g. 0.30, 0.40, 0.50
 
-  // Lump Sum State
-  const [lumpSumInvested, setLumpSumInvested] = useState<number>(1000);
-  const [lumpSumPurchasePrice, setLumpSumPurchasePrice] = useState<number>(55000);
+    const months = Math.max(1, Number(durationMonths) || 1);
 
-  // Quick Preset Handlers
-  const setPreset = (amount: number, freq: 'daily' | 'weekly' | 'biweekly' | 'monthly', months: number) => {
-    setDcaAmount(amount);
-    setDcaFrequency(freq);
-    setDcaDurationMonths(months);
-  };
+    const totalInvested = validAmount;
+    // Earns the guaranteed monthly interest for each month held
+    const interestEarned = totalInvested * monthlyRateFraction * months;
 
-  // Calculations
-  const dcaResult = useMemo(() => {
-    return calculateDca({
-      amountUsd: Number(dcaAmount) || 0,
-      frequency: dcaFrequency,
-      durationMonths: Number(dcaDurationMonths) || 12,
-      customBtcPrice: marketData.priceUsd,
-    });
-  }, [dcaAmount, dcaFrequency, dcaDurationMonths, marketData.priceUsd]);
+    const totalPayout = totalInvested + interestEarned;
+    const returnPercentage = totalInvested > 0 ? (interestEarned / totalInvested) * 100 : 0;
+    const monthlyReturn = totalInvested * monthlyRateFraction; // Exact monthly return on capital
+    const dailyReturn = monthlyReturn / 30;
 
-  const lumpSumResult = useMemo(() => {
-    return calculateLumpSum({
-      amountInvestedUsd: Number(lumpSumInvested) || 0,
-      purchasePriceUsd: Number(lumpSumPurchasePrice) || 1,
-      currentPriceUsd: marketData.priceUsd,
-    });
-  }, [lumpSumInvested, lumpSumPurchasePrice, marketData.priceUsd]);
+    const btcPrice = marketData?.priceUsd > 0 ? marketData.priceUsd : DEFAULT_MARKET_DATA.priceUsd;
+    const btcEquivalent = totalPayout / btcPrice;
 
-  const isDcaProfitable = dcaResult.unrealizedProfitLossUsd >= 0;
-  const isLumpSumProfitable = lumpSumResult.unrealizedProfitLossUsd >= 0;
+    return {
+      totalInvested,
+      interestEarned,
+      totalPayout,
+      returnPercentage,
+      monthlyReturn,
+      dailyReturn,
+      btcEquivalent,
+      monthlyRatePercent: validMonthlyRate,
+      months,
+    };
+  }, [amount, monthlyInterestRate, durationMonths, marketData?.priceUsd]);
 
   return (
     <section id="calculator" className="section-wrapper" style={{ background: 'var(--bg-primary)' }}>
-      <div className="container">
+      <div className="container" style={{ maxWidth: '1060px', margin: '0 auto' }}>
         {/* Section Header */}
-        <div className="section-header">
-          <div className="section-badge">
-            <Calculator size={14} />
-            <span>Yield Projections</span>
+        <div className="section-header" style={{ textAlign: 'center', marginBottom: '2.75rem' }}>
+          <div
+            className="section-badge"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              background: 'rgba(236, 121, 107, 0.12)',
+              border: '1px solid rgba(236, 121, 107, 0.35)',
+              color: '#ec796b',
+              padding: '0.35rem 0.95rem',
+              borderRadius: '9999px',
+              fontSize: '0.825rem',
+              fontWeight: 700,
+              marginBottom: '0.75rem',
+            }}
+          >
+            <Zap size={14} />
+            <span>30% – 50% Monthly Vault Interest</span>
           </div>
-          <h2 className="section-title">Calculate Your Projected Yield</h2>
-          <p className="section-subtitle">
-            See how our Bitcoin algorithmic vaults and Starknet Layer-2 ZK-yield strategies can grow your capital securely over time starting from $200.
+
+          <h2
+            className="section-title"
+            style={{
+              fontSize: 'clamp(2rem, 3.8vw, 2.75rem)',
+              fontWeight: 900,
+              letterSpacing: '-0.02em',
+              marginBottom: '0.65rem',
+            }}
+          >
+            Calculate Your <span style={{ color: '#ec796b' }}>Projected Returns</span>
+          </h2>
+
+          <p
+            className="section-subtitle"
+            style={{
+              fontSize: '1rem',
+              color: 'var(--text-muted)',
+              maxWidth: '640px',
+              margin: '0 auto',
+              lineHeight: 1.6,
+            }}
+          >
+            Earn guaranteed <strong style={{ color: 'var(--text-main)' }}>30% to 50% monthly interest</strong> on your capital. Calculate your exact monthly payout starting from $200.
           </p>
         </div>
 
-        {/* Mode Selector Tabs */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.75rem',
-            marginBottom: '2.5rem',
-          }}
-        >
-          <button
-            onClick={() => setCalculatorMode('dca')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.75rem',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              transition: 'all 0.2s ease',
-              background: calculatorMode === 'dca' ? 'var(--brand-btc)' : 'var(--bg-surface)',
-              color: calculatorMode === 'dca' ? '#ffffff' : 'var(--text-muted)',
-              border: '1px solid',
-              borderColor: calculatorMode === 'dca' ? 'var(--brand-btc)' : 'var(--border-subtle)',
-              boxShadow: calculatorMode === 'dca' ? '0 4px 12px var(--brand-btc-glow)' : 'none',
-            }}
-          >
-            <RefreshCw size={16} />
-            <span>Recurring Deposit (Managed)</span>
-          </button>
-
-          <button
-            onClick={() => setCalculatorMode('lumpsum')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.75rem',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              transition: 'all 0.2s ease',
-              background: calculatorMode === 'lumpsum' ? 'var(--brand-btc)' : 'var(--bg-surface)',
-              color: calculatorMode === 'lumpsum' ? '#ffffff' : 'var(--text-muted)',
-              border: '1px solid',
-              borderColor: calculatorMode === 'lumpsum' ? 'var(--brand-btc)' : 'var(--border-subtle)',
-              boxShadow: calculatorMode === 'lumpsum' ? '0 4px 12px var(--brand-btc-glow)' : 'none',
-            }}
-          >
-            <DollarSign size={16} />
-            <span>Lump Sum Allocation</span>
-          </button>
-        </div>
-
-        {/* Calculator Main Panel */}
+        {/* 2-Column Calculator Grid */}
         <div
           className="glass-card"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
             gap: '2.5rem',
-            padding: '2.5rem',
-            maxWidth: '1080px',
-            margin: '0 auto',
+            padding: 'clamp(1.75rem, 4vw, 2.75rem)',
+            borderRadius: '1.5rem',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)',
           }}
         >
-          {/* Controls Column */}
-          {calculatorMode === 'dca' ? (
+          {/* LEFT: 3 Simple Inputs */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* STEP 1: Investment Capital */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Recurring Parameters</h3>
-                <span className="pill pill-btc">Automated Stacking</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                  1. Your Investment Capital
+                </label>
+                <span
+                  style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 800,
+                    color: '#ec796b',
+                    fontVariantNumeric: 'tabular-nums',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  ${amount.toLocaleString()}
+                </span>
               </div>
 
-              {/* Amount Input */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <label htmlFor="dca-amount" style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                    Recurring Amount (USD)
-                  </label>
-                  <span className="mono" style={{ fontWeight: 700, color: 'var(--brand-btc)' }}>
-                    ${dcaAmount}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                  <input
-                    id="dca-amount"
-                    type="number"
-                    min="200"
-                    max="1000000"
-                    step="100"
-                    value={dcaAmount}
-                    onChange={(e) => setDcaAmount(Math.max(200, Number(e.target.value)))}
+              <input
+                type="number"
+                min="200"
+                step="100"
+                value={amount}
+                onChange={(e) => setAmount(Math.max(200, Number(e.target.value)))}
+                style={{
+                  width: '100%',
+                  padding: '0.85rem 1rem',
+                  borderRadius: '0.75rem',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-surface-elevated)',
+                  color: 'var(--text-main)',
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  marginBottom: '0.65rem',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              />
+
+              {/* Quick Select Buttons */}
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {[200, 1000, 5000, 10000, 50000].map((val) => (
+                  <button
+                    key={val}
+                    onClick={() => setAmount(val)}
                     style={{
-                      width: '100%',
-                      padding: '0.75rem 1rem',
+                      padding: '0.35rem 0.75rem',
                       borderRadius: '0.5rem',
-                      border: '1px solid var(--border-subtle)',
-                      background: 'var(--bg-surface-elevated)',
-                      fontSize: '1rem',
-                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      background: amount === val ? '#ec796b' : 'var(--bg-surface-elevated)',
+                      color: amount === val ? '#ffffff' : 'var(--text-muted)',
+                      border: '1px solid',
+                      borderColor: amount === val ? '#ec796b' : 'var(--border-subtle)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      fontVariantNumeric: 'tabular-nums',
                     }}
-                  />
-                </div>
-                {/* Preset Chips */}
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {[200, 1000, 5000, 10000, 50000].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => setDcaAmount(val)}
-                      style={{
-                        padding: '0.25rem 0.65rem',
-                        borderRadius: '0.35rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        background: dcaAmount === val ? 'var(--brand-btc)' : 'var(--bg-surface-elevated)',
-                        color: dcaAmount === val ? '#ffffff' : 'var(--text-muted)',
-                        border: '1px solid var(--border-subtle)',
-                      }}
-                    >
-                      ${val.toLocaleString()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Frequency Selector */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                  Investment Frequency
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
-                  {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((freq) => (
-                    <button
-                      key={freq}
-                      onClick={() => setDcaFrequency(freq)}
-                      style={{
-                        padding: '0.65rem 0.5rem',
-                        borderRadius: '0.5rem',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        textTransform: 'capitalize',
-                        background: dcaFrequency === freq ? 'var(--bg-surface-elevated)' : 'transparent',
-                        color: dcaFrequency === freq ? 'var(--brand-btc)' : 'var(--text-muted)',
-                        border: '1px solid',
-                        borderColor: dcaFrequency === freq ? 'var(--brand-btc)' : 'var(--border-subtle)',
-                      }}
-                    >
-                      {freq === 'biweekly' ? 'Bi-wkly' : freq}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Duration Slider */}
-              <div style={{ marginBottom: '1.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <label htmlFor="duration-slider" style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                    Duration: {dcaDurationMonths} Months ({Math.round(dcaDurationMonths / 12 * 10) / 10} yrs)
-                  </label>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>1 to 48 months</span>
-                </div>
-                <input
-                  id="duration-slider"
-                  type="range"
-                  min="6"
-                  max="48"
-                  step="6"
-                  value={dcaDurationMonths}
-                  onChange={(e) => setDcaDurationMonths(Number(e.target.value))}
-                  style={{ width: '100%', accentColor: 'var(--brand-btc)' }}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem' }}>
-                  {[6, 12, 24, 36, 48].map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setDcaDurationMonths(m)}
-                      style={{
-                        fontSize: '0.725rem',
-                        fontWeight: 600,
-                        color: dcaDurationMonths === m ? 'var(--brand-btc)' : 'var(--text-faint)',
-                      }}
-                    >
-                      {m}mo
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Fast Presets Box */}
-              <div
-                style={{
-                  padding: '1rem',
-                  borderRadius: '0.75rem',
-                  background: 'var(--bg-surface-elevated)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div style={{ fontSize: '0.775rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                  Popular Beginner Presets
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => setPreset(200, 'weekly', 12)}
-                    className="pill"
-                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}
                   >
-                    🌱 $200 / wk for 1 Year
+                    ${val >= 1000 ? `${val / 1000}k` : val}
                   </button>
-                  <button
-                    onClick={() => setPreset(1000, 'weekly', 24)}
-                    className="pill"
-                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}
-                  >
-                    ⚡ $1k / wk for 2 Years
-                  </button>
-                  <button
-                    onClick={() => setPreset(10000, 'monthly', 36)}
-                    className="pill"
-                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}
-                  >
-                    🎯 $10k / mo for 3 Years
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
-          ) : (
+
+            {/* STEP 2: Choose Interest Rate Tier (30% to 50% Monthly) */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Lump-Sum Parameters</h3>
-                <span className="pill pill-btc">Single Purchase</span>
-              </div>
-
-              {/* Amount Invested */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label htmlFor="lumpsum-amount" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                  Total Capital Invested (USD)
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Percent size={15} style={{ color: '#ec796b' }} />
+                  <span>2. Guaranteed Monthly Interest</span>
                 </label>
-                <input
-                  id="lumpsum-amount"
-                  type="number"
-                  min="200"
-                  step="100"
-                  value={lumpSumInvested}
-                  onChange={(e) => setLumpSumInvested(Math.max(200, Number(e.target.value)))}
+                <span
                   style={{
-                    width: '100%',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    border: '1px solid var(--border-subtle)',
-                    background: 'var(--bg-surface-elevated)',
-                    fontSize: '1rem',
-                    fontWeight: 600,
+                    fontSize: '1.25rem',
+                    fontWeight: 800,
+                    color: '#ec796b',
+                    fontVariantNumeric: 'tabular-nums',
+                    letterSpacing: '0.02em',
                   }}
-                />
+                >
+                  {monthlyInterestRate}% / Month
+                </span>
               </div>
 
-              {/* Purchase Price */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label htmlFor="lumpsum-price" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                  Bitcoin Purchase Price (USD)
-                </label>
-                <input
-                  id="lumpsum-price"
-                  type="number"
-                  min="1000"
-                  step="500"
-                  value={lumpSumPurchasePrice}
-                  onChange={(e) => setLumpSumPurchasePrice(Math.max(1, Number(e.target.value)))}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    border: '1px solid var(--border-subtle)',
-                    background: 'var(--bg-surface-elevated)',
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                  }}
-                />
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <button
-                    onClick={() => setLumpSumPurchasePrice(Math.round(marketData.priceUsd * 0.7))}
-                    style={{ fontSize: '0.75rem', color: 'var(--brand-info)' }}
-                  >
-                    30% Dip (${Math.round(marketData.priceUsd * 0.7).toLocaleString()})
-                  </button>
-                  <button
-                    onClick={() => setLumpSumPurchasePrice(Math.round(marketData.priceUsd))}
-                    style={{ fontSize: '0.75rem', color: 'var(--brand-btc)' }}
-                  >
-                    Current Rate (${Math.round(marketData.priceUsd).toLocaleString()})
-                  </button>
-                </div>
+              {/* 3 Prominent Monthly Interest Tier Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                {[
+                  { rate: 30, name: 'Starter', desc: '30% / Month' },
+                  { rate: 40, name: 'Growth', desc: '40% / Month' },
+                  { rate: 50, name: 'VIP Vault', desc: '50% / Month' },
+                ].map((tier) => {
+                  const isSelected = monthlyInterestRate === tier.rate;
+                  return (
+                    <button
+                      key={tier.rate}
+                      onClick={() => setMonthlyInterestRate(tier.rate)}
+                      style={{
+                        padding: '0.85rem 0.5rem',
+                        borderRadius: '0.75rem',
+                        background: isSelected ? 'rgba(236, 121, 107, 0.15)' : 'var(--bg-surface-elevated)',
+                        border: isSelected ? '2px solid #ec796b' : '1px solid var(--border-subtle)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.2rem',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: '1.2rem',
+                          fontWeight: 900,
+                          color: isSelected ? '#ec796b' : 'var(--text-main)',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {tier.rate}%
+                      </span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isSelected ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                        {tier.name}
+                      </span>
+                      <span style={{ fontSize: '0.65rem', color: isSelected ? '#ec796b' : 'var(--text-faint)' }}>
+                        {tier.desc}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Current Market Price Reference */}
-              <div
-                style={{
-                  padding: '1rem',
-                  borderRadius: '0.75rem',
-                  background: 'var(--bg-surface-elevated)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-                  Current Market Benchmark
-                </div>
-                <div className="mono" style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-                  {formatUsd(marketData.priceUsd, 0)} / BTC
-                </div>
+              {/* Fine-tuning Slider (30% to 50%) */}
+              <input
+                type="range"
+                min="30"
+                max="50"
+                step="1"
+                value={monthlyInterestRate}
+                onChange={(e) => setMonthlyInterestRate(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#ec796b' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                <span>30% / Month</span>
+                <span>40% / Month</span>
+                <span>50% / Month</span>
               </div>
             </div>
-          )}
 
-          {/* Results Summary Column */}
+            {/* STEP 3: Duration / Lock Horizon (1 Month, 3 Months, 6 Months, 12 Months) */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Calendar size={15} style={{ color: '#ec796b' }} />
+                  <span>3. Investment Horizon</span>
+                </label>
+                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+                  {durationMonths} {durationMonths === 1 ? 'Month' : 'Months'} ({monthlyInterestRate * durationMonths}% Total Return)
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+                {[
+                  { months: 1, label: '1 Month', note: `${monthlyInterestRate}% return` },
+                  { months: 3, label: '3 Months', note: `${monthlyInterestRate * 3}% return` },
+                  { months: 6, label: '6 Months', note: `${monthlyInterestRate * 6}% return` },
+                  { months: 12, label: '1 Year', note: `${monthlyInterestRate * 12}% return` },
+                ].map((item) => {
+                  const isSelected = durationMonths === item.months;
+                  return (
+                    <button
+                      key={item.months}
+                      onClick={() => setDurationMonths(item.months)}
+                      style={{
+                        padding: '0.65rem 0.4rem',
+                        borderRadius: '0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        background: isSelected ? '#ec796b' : 'var(--bg-surface-elevated)',
+                        color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                        border: '1px solid',
+                        borderColor: isSelected ? '#ec796b' : 'var(--border-subtle)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.15rem',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <span>{item.label}</span>
+                      <span style={{ fontSize: '0.65rem', opacity: 0.85 }}>{item.note}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: The Crystal Clear Results Card */}
           <div
             style={{
+              background: 'var(--bg-surface-elevated)',
+              borderRadius: '1.25rem',
+              padding: 'clamp(1.5rem, 3vw, 2rem)',
+              border: '1px solid var(--border-subtle)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              background: 'var(--bg-surface-elevated)',
-              padding: '2rem',
-              borderRadius: '0.85rem',
-              border: '1px solid var(--border-subtle)',
+              gap: '1.75rem',
             }}
           >
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>
-                  Estimated Simulation Results
+              {/* Header Badge */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+                  Projected Payout Summary
                 </span>
-                <button
-                  onClick={onToggleSatsMode}
-                  className="pill pill-btc"
-                  style={{ cursor: 'pointer', border: 'none' }}
-                  title="Toggle Satoshis display"
-                >
-                  <Zap size={12} />
-                  <span>{satsMode ? 'Displaying Sats' : 'Displaying BTC'}</span>
-                </button>
-              </div>
-
-              {/* Main Portfolio Value Output */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-                  Current Portfolio Value
-                </div>
-                <div
-                  className="mono"
+                <span
                   style={{
-                    fontSize: '2.25rem',
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: '9999px',
+                    background: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
+                    fontSize: '0.75rem',
                     fontWeight: 800,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--text-main)',
                   }}
                 >
-                  {formatUsd(calculatorMode === 'dca' ? dcaResult.currentPortfolioValueUsd : lumpSumResult.currentValueUsd, 2)}
+                  +{monthlyInterestRate}% / Month Guaranteed
+                </span>
+              </div>
+
+              {/* Big Hero Number: Total Payout */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                  Total Projected Value (Principal + Interest)
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem' }}>
+                <div
+                  style={{
+                    fontSize: 'clamp(2.2rem, 4.5vw, 3rem)',
+                    fontWeight: 900,
+                    color: 'var(--text-main)',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.1,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {formatUsd(calculation.totalPayout, 2)}
+                </div>
+
+                {/* Net Profit Callout */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
                   <span
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.2rem',
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                      color: (calculatorMode === 'dca' ? isDcaProfitable : isLumpSumProfitable) ? 'var(--brand-success)' : 'var(--brand-danger)',
+                      gap: '0.3rem',
+                      padding: '0.4rem 0.85rem',
+                      borderRadius: '0.5rem',
+                      background: 'rgba(34, 197, 94, 0.15)',
+                      color: '#22c55e',
+                      fontSize: '0.95rem',
+                      fontWeight: 800,
+                      fontVariantNumeric: 'tabular-nums',
                     }}
                   >
-                    {(calculatorMode === 'dca' ? isDcaProfitable : isLumpSumProfitable) ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
-                    {(calculatorMode === 'dca' ? isDcaProfitable : isLumpSumProfitable) ? '+' : ''}
-                    {formatUsd(calculatorMode === 'dca' ? dcaResult.unrealizedProfitLossUsd : lumpSumResult.unrealizedProfitLossUsd, 2)}
-                    {' '}({(calculatorMode === 'dca' ? dcaResult.unrealizedProfitLossPercent : lumpSumResult.unrealizedProfitLossPercent).toFixed(1)}%)
+                    <TrendingUp size={16} />
+                    <span>+{formatUsd(calculation.interestEarned, 2)}</span>
+                    <span>(+{calculation.returnPercentage.toFixed(1)}% Pure Profit)</span>
                   </span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>unrealized P&amp;L</span>
                 </div>
               </div>
 
-              {/* Metric Breakdown Rows */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem' }}>
+              {/* 3-Point Line Breakdown */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.85rem',
+                  borderTop: '1px solid var(--border-subtle)',
+                  paddingTop: '1.25rem',
+                }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Total Capital Invested</span>
-                  <span className="mono" style={{ fontWeight: 700 }}>
-                    {formatUsd(calculatorMode === 'dca' ? dcaResult.totalInvestedUsd : lumpSumInvested, 0)}
-                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>Initial Capital Invested</span>
+                  <strong style={{ color: 'var(--text-main)', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }}>
+                    {formatUsd(calculation.totalInvested, 0)}
+                  </strong>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Total Bitcoin Stacked</span>
-                  <span className="mono" style={{ fontWeight: 700, color: 'var(--brand-btc)' }}>
-                    {satsMode
-                      ? `${formatSats(calculatorMode === 'dca' ? dcaResult.totalSatsAccumulated : lumpSumResult.satsReceived)} sats`
-                      : `${formatBtc(calculatorMode === 'dca' ? dcaResult.totalBtcAccumulated : lumpSumResult.btcReceived, 6)} BTC`}
-                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>Monthly Interest Rate</span>
+                  <strong style={{ color: '#ec796b', fontVariantNumeric: 'tabular-nums' }}>
+                    {monthlyInterestRate}% Every Month
+                  </strong>
                 </div>
 
-                {calculatorMode === 'dca' && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Average Purchase Price</span>
-                      <span className="mono" style={{ fontWeight: 700 }}>
-                        {formatUsd(dcaResult.averagePurchasePriceUsd, 0)} / BTC
-                      </span>
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Pure Profit Earned</span>
+                  <strong style={{ color: '#22c55e', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }}>
+                    +{formatUsd(calculation.interestEarned, 2)}
+                  </strong>
+                </div>
 
-                    <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border-subtle)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                        Projected Profit Breakdown
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                        <span style={{ color: 'var(--text-faint)' }}>Daily Avg Return</span>
-                        <span className="mono" style={{ fontWeight: 600, color: isDcaProfitable ? 'var(--brand-success)' : 'var(--brand-danger)' }}>
-                          {isDcaProfitable ? '+' : ''}{formatUsd(dcaResult.unrealizedProfitLossUsd / (dcaDurationMonths * 30), 2)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                        <span style={{ color: 'var(--text-faint)' }}>Weekly Avg Return</span>
-                        <span className="mono" style={{ fontWeight: 600, color: isDcaProfitable ? 'var(--brand-success)' : 'var(--brand-danger)' }}>
-                          {isDcaProfitable ? '+' : ''}{formatUsd(dcaResult.unrealizedProfitLossUsd / (dcaDurationMonths * 4.33), 2)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                        <span style={{ color: 'var(--text-faint)' }}>Monthly Avg Return</span>
-                        <span className="mono" style={{ fontWeight: 600, color: isDcaProfitable ? 'var(--brand-success)' : 'var(--brand-danger)' }}>
-                          {isDcaProfitable ? '+' : ''}{formatUsd(dcaResult.unrealizedProfitLossUsd / dcaDurationMonths, 2)}
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Bitcoin Stacking Power</span>
+                  <strong style={{ color: 'var(--brand-btc, #ec796b)', fontVariantNumeric: 'tabular-nums' }}>
+                    &asymp; {formatBtc(calculation.btcEquivalent, 6)} BTC
+                  </strong>
+                </div>
 
-                {/* CTA to lock in on wishlist */}
-                <div style={{ marginTop: '1.5rem' }}>
-                  <Link
-                    href="/register"
-                    className="btn btn-primary"
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem',
-                      fontSize: '0.95rem',
-                      fontWeight: 700,
-                      background: 'linear-gradient(135deg, #ec796b 0%, #ff8c7e 100%)',
-                      color: '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      border: 'none',
-                      boxShadow: '0 8px 24px rgba(236, 121, 107, 0.4)',
-                    }}
-                  >
-                    <Sparkles size={16} />
-                    <span>Lock In This Allocation on Wishlist</span>
-                    <ArrowRight size={16} />
-                  </Link>
+                {/* Earnings Pacing Pills: Exact Monthly and Daily Profit */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.65rem',
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-subtle)',
+                    marginTop: '0.35rem',
+                    fontSize: '0.82rem',
+                  }}
+                >
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.7rem' }}>Monthly Profit Payout</span>
+                    <strong style={{ color: '#22c55e', fontVariantNumeric: 'tabular-nums', fontSize: '0.95rem' }}>
+                      +{formatUsd(calculation.monthlyReturn, 2)} / month
+                    </strong>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.7rem' }}>Daily Profit Payout</span>
+                    <strong style={{ color: '#22c55e', fontVariantNumeric: 'tabular-nums', fontSize: '0.95rem' }}>
+                      +{formatUsd(calculation.dailyReturn, 2)} / day
+                    </strong>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Disclaimer Footer Note */}
-            <div
-              style={{
-                marginTop: '1.75rem',
-                paddingTop: '1rem',
-                borderTop: '1px solid var(--border-subtle)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.5rem',
-              }}
-            >
-              <AlertCircle size={15} style={{ color: 'var(--text-muted)', flexShrink: 0, marginTop: '2px' }} />
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                <strong>Educational Simulation:</strong> Assumes historical price modeling over the selected horizon. Bitcoin prices fluctuate dynamically. Future results may differ significantly.
-              </p>
+            {/* Direct Link to Register & Lock In */}
+            <div>
+              <Link
+                href="/register"
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '0.95rem',
+                  fontSize: '0.98rem',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #ec796b 0%, #ff8c7e 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  border: 'none',
+                  borderRadius: '0.75rem',
+                  boxShadow: '0 8px 24px rgba(236, 121, 107, 0.45)',
+                  boxSizing: 'border-box',
+                  textDecoration: 'none',
+                  transition: 'transform 0.15s ease',
+                }}
+              >
+                <Sparkles size={18} />
+                <span>Lock In {monthlyInterestRate}% Monthly Interest</span>
+                <ArrowRight size={18} />
+              </Link>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.75rem',
+                  color: 'var(--text-muted)',
+                  marginTop: '0.85rem',
+                }}
+              >
+                <ShieldCheck size={14} style={{ color: '#22c55e' }} />
+                <span>Audited Starknet ZK-Vaults &bull; Non-Commingled Custody</span>
+              </div>
             </div>
           </div>
         </div>

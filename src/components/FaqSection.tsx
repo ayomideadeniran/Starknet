@@ -5,6 +5,7 @@ import { HelpCircle, ChevronDown, ChevronUp, MessageCircle, Mail } from 'lucide-
 import { FAQ_ITEMS } from '@/lib/education-data';
 
 export default function FaqSection() {
+  const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@starknet-portal.io';
   const [openFaqId, setOpenFaqId] = useState<string | null>(FAQ_ITEMS[0].id);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -150,9 +151,9 @@ export default function FaqSection() {
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
             Our educational support team is here to help you navigate Bitcoin safely. We will never ask for your seed phrase or password.
           </p>
-          <a href="mailto:support@bitcoinpro.local" className="btn btn-secondary">
+          <a href={`mailto:${supportEmail}?subject=${encodeURIComponent('Starknet Protocol Support Inquiry')}`} className="btn btn-secondary">
             <Mail size={16} />
-            <span>Contact Educational Support</span>
+            <span>Contact Customer Support</span>
           </a>
         </div>
       </div>

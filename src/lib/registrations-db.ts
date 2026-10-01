@@ -159,7 +159,7 @@ export async function syncPendingRegistrationsToMongo(): Promise<number> {
         await WaitlistModel.findOneAndUpdate(
           { email: rec.email },
           { $set: { ...rec, updatedAt: new Date() } },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
+          { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
         records[i].syncedToMongo = true;
         syncedCount++;
@@ -244,7 +244,7 @@ export async function saveActualRegistration(
       investmentTier: data.investmentTier || '$10,000 – $50,000',
       paymentMethod: data.paymentMethod || 'USDT / USDC (Stablecoins)',
       investorType: data.investorType || 'Individual / Private Investor ($200+ Starter)',
-      primaryInterest: data.primaryInterest || 'Starknet Bitcoin ZK-Vault & 12.4% APY Yield',
+      primaryInterest: data.primaryInterest || 'Starknet Bitcoin ZK-Vault & 30% – 50% Monthly Yield',
       priorityStatus: data.priorityStatus || 'VIP',
       queueNumber,
       ticketId,
@@ -282,7 +282,7 @@ export async function saveActualRegistration(
             updatedAt: new Date(),
           },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
       );
 
       newRecord.syncedToMongo = true;

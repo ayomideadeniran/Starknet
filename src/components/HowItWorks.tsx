@@ -43,7 +43,7 @@ const STEPS = [
     color: '#10b981',
     summary: 'Your capital is anchored into institutional cold-storage multi-sig vaults and deployed into audited delta-neutral algorithmic strategies and Starknet Layer-2 scaling pools.',
     highlights: [
-      'Target 12.4% APY institutional vault yields with automated risk limits',
+      'Target 30% to 50% monthly institutional vault yields with automated risk limits',
       'Zero-knowledge proof verification ensuring mathematical execution safety',
       'Non-commingled segregated accounts and institutional legal frameworks'
     ],

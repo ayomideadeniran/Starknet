@@ -53,7 +53,7 @@ const INVESTMENT_TIERS = [
     label: '$10,000 – $50,000',
     subtitle: 'High-Yield Wealth Builder',
     badge: 'Most Popular',
-    desc: 'Guaranteed 12.4% APY vault allocation and dedicated quantitative manager.',
+    desc: 'Guaranteed 30% – 50% monthly yield vault allocation and dedicated quantitative manager.',
   },
   {
     id: 'institutional',
@@ -72,7 +72,7 @@ const INVESTMENT_TIERS = [
 ];
 
 const STRATEGY_INTERESTS = [
-  'Starknet Bitcoin ZK-Vault & 12.4% APY Yield',
+  'Starknet Bitcoin ZK-Vault & 30% – 50% Monthly Yield',
   'Bitcoin Layer-2 ZK-Rollup Scaling & Settlement',
   'Institutional Multi-Sig Cold Custody (BTC & Starknet)',
   'Automated Bitcoin Dollar-Cost Averaging (DCA)',
@@ -437,7 +437,7 @@ export default function GrandOpeningWishlistPage() {
                 margin: '0 auto 1.75rem',
               }}
             >
-              Reserve priority on the Bitcoin &amp; Starknet Layer-2 Ecosystem. Registered participants secure guaranteed vault capacity starting from <strong style={{ color: 'var(--text-main)' }}>$200</strong>, complete platform fee waivers during launch week, and direct access to the 12.4% APY institutional vault.
+              Reserve priority on the Bitcoin &amp; Starknet Layer-2 Ecosystem. Registered participants secure guaranteed vault capacity starting from <strong style={{ color: 'var(--text-main)' }}>$200</strong>, complete platform fee waivers during launch week, and direct access to the 30% – 50% monthly interest institutional vault.
             </p>
 
             {/* Privilege Feature Ribbons */}
@@ -453,7 +453,7 @@ export default function GrandOpeningWishlistPage() {
             >
               {[
                 { label: 'Entry From $200', icon: '🪙' },
-                { label: '12.4% Target APY', icon: '⚡' },
+                { label: '30% – 50% Monthly Yield', icon: '⚡' },
                 { label: 'Multi-Sig Cold Custody', icon: '🛡️' },
                 { label: '0% Launch Fees', icon: '🎉' },
               ].map((item) => (
@@ -1157,7 +1157,7 @@ export default function GrandOpeningWishlistPage() {
                     {[
                       {
                         title: 'Guaranteed Capacity',
-                        desc: 'Access to 12.4% APY Starknet ZK-vault starting from $200.',
+                        desc: 'Access to 30% – 50% monthly yield Starknet ZK-vault starting from $200.',
                       },
                       {
                         title: '0% Launch Fees',

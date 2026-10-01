@@ -35,7 +35,7 @@ const WaitlistSchema = new Schema<IWaitlistDocument>(
     investmentTier: { type: String, required: true, default: '$10,000 – $50,000' },
     paymentMethod: { type: String, required: true, default: 'USDT / USDC (Stablecoins)' },
     investorType: { type: String, required: true, default: 'Individual / Private Investor ($200+ Starter)' },
-    primaryInterest: { type: String, required: true, default: 'Starknet Bitcoin ZK-Vault & 12.4% APY Yield' },
+    primaryInterest: { type: String, required: true, default: 'Starknet Bitcoin ZK-Vault & 30% – 50% Monthly Yield' },
     telegramHandle: { type: String, trim: true },
     referralCode: { type: String, trim: true },
     notes: { type: String, trim: true },
@@ -58,8 +58,6 @@ const WaitlistSchema = new Schema<IWaitlistDocument>(
 );
 
 // Helpful indexes
-WaitlistSchema.index({ email: 1 });
-WaitlistSchema.index({ ticketId: 1 });
 WaitlistSchema.index({ queueNumber: 1 });
 
 export const WaitlistModel: Model<IWaitlistDocument> =
