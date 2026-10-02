@@ -14,8 +14,8 @@ interface AddGoalModalProps {
 export default function AddGoalModal({ currentBtcPrice, onClose, onAddGoal }: AddGoalModalProps) {
   const [goalType, setGoalType] = useState<'sats_target' | 'usd_target'>('sats_target');
   const [title, setTitle] = useState('');
-  const [targetSats, setTargetSats] = useState<number>(2500000);
-  const [targetUsd, setTargetUsd] = useState<number>(2000);
+  const [targetSats, setTargetSats] = useState<number>(500000);
+  const [targetUsd, setTargetUsd] = useState<number>(1000);
   const [durationMonths, setDurationMonths] = useState<number>(12);
   const [notes, setNotes] = useState('');
 
@@ -147,7 +147,7 @@ export default function AddGoalModal({ currentBtcPrice, onClose, onAddGoal }: Ad
             <input
               id="goal-title"
               type="text"
-              placeholder={goalType === 'sats_target' ? 'e.g. Join the 5M Sats Club' : 'e.g. Invest $2,000 in 2026'}
+              placeholder={goalType === 'sats_target' ? 'e.g. Join the 500K Sats Club' : 'e.g. Invest $500 in 2026'}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               style={{
@@ -175,10 +175,10 @@ export default function AddGoalModal({ currentBtcPrice, onClose, onAddGoal }: Ad
               <input
                 id="target-sats"
                 type="number"
-                min="100000"
-                step="500000"
+                min="50000"
+                step="50000"
                 value={targetSats}
-                onChange={(e) => setTargetSats(Math.max(10000, Number(e.target.value)))}
+                onChange={(e) => setTargetSats(Math.max(50000, Number(e.target.value)))}
                 style={{
                   width: '100%',
                   padding: '0.75rem 1rem',
@@ -191,7 +191,7 @@ export default function AddGoalModal({ currentBtcPrice, onClose, onAddGoal }: Ad
                 required
               />
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                {[1000000, 2500000, 5000000, 10000000, 21000000].map((s) => (
+                {[50000, 100000, 250000, 500000, 1000000].map((s) => (
                   <button
                     type="button"
                     key={s}
@@ -219,8 +219,8 @@ export default function AddGoalModal({ currentBtcPrice, onClose, onAddGoal }: Ad
               <input
                 id="target-usd"
                 type="number"
-                min="100"
-                step="250"
+                min="50"
+                step="50"
                 value={targetUsd}
                 onChange={(e) => setTargetUsd(Math.max(50, Number(e.target.value)))}
                 style={{

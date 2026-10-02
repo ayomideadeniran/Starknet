@@ -58,7 +58,7 @@ export default function Footer() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
               <li><a href="#how-it-works" style={{ transition: 'color 0.15s' }}>How ZK-Vaults Work</a></li>
               <li><a href="#calculator" style={{ transition: 'color 0.15s' }}>Projected Yield Calculator</a></li>
-              <li><a href="#tiers" style={{ transition: 'color 0.15s' }}>Allocation Tiers ($200+)</a></li>
+              <li><a href="#tiers" style={{ transition: 'color 0.15s' }}>Allocation Tiers ($50+)</a></li>
               <li><a href="#education" style={{ transition: 'color 0.15s' }}>Interactive Knowledge Quiz</a></li>
               <li><a href="#fees" style={{ transition: 'color 0.15s' }}>Fee Transparency</a></li>
             </ul>
@@ -94,7 +94,7 @@ export default function Footer() {
                 lineHeight: 1.5,
               }}
             >
-              We do not provide speculative trading signals or unverified hype. Our protocol is engineered to unlock mathematical ZK-Rollup yields, disciplined Bitcoin allocations starting from $200, and institutional multi-sig custody.
+              We do not provide speculative trading signals or unverified hype. Our protocol is engineered to unlock mathematical ZK-Rollup yields, disciplined Bitcoin allocations starting from $50, and institutional multi-sig custody.
             </div>
           </div>
         </div>

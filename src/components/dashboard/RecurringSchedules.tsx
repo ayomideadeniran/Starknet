@@ -19,7 +19,7 @@ export default function RecurringSchedules({
   onAddSchedule,
 }: RecurringSchedulesProps) {
   const [isCreating, setIsCreating] = useState(false);
-  const [amountUsd, setAmountUsd] = useState(25);
+  const [amountUsd, setAmountUsd] = useState(50);
   const [frequency, setFrequency] = useState<'weekly' | 'biweekly' | 'monthly'>('weekly');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('ach_bank');
 
@@ -107,7 +107,8 @@ export default function RecurringSchedules({
                 </label>
                 <input
                   type="number"
-                  min="5"
+                  min="50"
+                  max="5000"
                   step="5"
                   value={amountUsd}
                   onChange={(e) => setAmountUsd(Number(e.target.value))}

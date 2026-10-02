@@ -4,7 +4,7 @@ export const SEED_NOTIFICATIONS: AppNotification[] = [
   {
     id: 'notif-1',
     title: 'Recurring DCA Executed',
-    message: 'Your weekly $25.00 automated order was filled at $83,000 / BTC.',
+    message: 'Your weekly $50.00 automated order was filled at $83,000 / BTC.',
     type: 'order',
     timestamp: '2026-08-22T09:16:00Z',
     read: false,

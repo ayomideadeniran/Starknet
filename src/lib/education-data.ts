@@ -145,7 +145,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: 'minimum-investment',
     category: 'investing',
     question: 'What is the minimum investment amount required?',
-    answer: 'Our Private Starter Allocation Tier begins at just $200 (ranging up to $1,000), ensuring institutional-grade ZK-vault yields are accessible without massive initial capital. Intermediate tiers scale from $1,000 to $50,000, while Institutional Custody and White-Glove tiers support $50,000 to $250,000+.'
+    answer: 'Our Private Starter Allocation Tier begins at just $50 (ranging up to $250), ensuring institutional-grade ZK-vault yields are accessible without massive initial capital. Intermediate tiers scale from $250 to $2,500, while Institutional Custody and White-Glove tiers support $2,500 to $5,000.'
   },
   {
     id: 'bitcoin-plus-starknet',

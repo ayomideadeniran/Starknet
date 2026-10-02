@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import * as postmark from 'postmark';
 import { getEnv } from '@/lib/telegram-service';
 
 export async function POST(request: Request) {
@@ -40,6 +41,45 @@ export async function POST(request: Request) {
 
     let mailSent = false;
     let mailError: string | null = null;
+
+    // 0. Attempt delivery via Postmark if POSTMARK_SERVER_TOKEN is configured
+    const postmarkToken = process.env.POSTMARK_SERVER_TOKEN;
+    const postmarkFrom = process.env.POSTMARK_FROM_EMAIL || 'info@starknetdev.online';
+
+    if (postmarkToken && postmarkToken !== 'your_postmark_server_token') {
+      try {
+        const client = new postmark.ServerClient(postmarkToken);
+        await client.sendEmail({
+          From: postmarkFrom,
+          To: supportDestination,
+          ReplyTo: email,
+          Subject: `[Ticket #${ticketId}] ${inquiryTopic} - ${userDisplayName}`,
+          TextBody: `Support Ticket: #${ticketId}\nFrom: ${userDisplayName} <${email}>\nCategory: ${inquiryTopic}\nDate: ${timestamp}\n\nMessage:\n${message}`,
+          HtmlBody: `
+            <div style="font-family: sans-serif; line-height: 1.6; color: #1e293b;">
+              <h2 style="color: #0284c7; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">
+                Support Inquiry [Ticket #${ticketId}]
+              </h2>
+              <p><strong>From:</strong> ${userDisplayName} (&lt;${email}&gt;)</p>
+              <p><strong>Category:</strong> ${inquiryTopic}</p>
+              <p><strong>Received At:</strong> ${timestamp}</p>
+              <hr style="border: 0; border-top: 1px solid #cbd5e1; margin: 16px 0;" />
+              <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <p style="white-space: pre-wrap; margin: 0;">${message}</p>
+              </div>
+              <p style="font-size: 12px; color: #64748b; margin-top: 20px;">
+                Direct reply to this email will reply directly to <strong>${email}</strong>.
+              </p>
+            </div>
+          `,
+          MessageStream: 'outbound',
+        });
+        mailSent = true;
+      } catch (pmErr: any) {
+        console.error('[POSTMARK ERROR]', pmErr);
+        mailError = pmErr?.message || 'Postmark delivery failed';
+      }
+    }
 
     // 1. Attempt delivery via Nodemailer if SMTP configured
     const smtpHost = process.env.SMTP_HOST;

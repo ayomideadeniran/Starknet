@@ -188,8 +188,8 @@ export default function BuyCryptoModal({
               <input
                 id="buy-usd-amount"
                 type="number"
-                min="10"
-                max="10000"
+                min="50"
+                max="5000"
                 step="25"
                 value={amountUsd}
                 onChange={(e) => setAmountUsd(Math.max(1, Number(e.target.value)))}
@@ -205,7 +205,7 @@ export default function BuyCryptoModal({
                 required
               />
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                {[25, 50, 100, 250, 500, 1000].map((v) => (
+                {[50, 100, 250, 500, 1000, 2500, 5000].map((v) => (
                   <button
                     type="button"
                     key={v}

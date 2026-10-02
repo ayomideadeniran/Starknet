@@ -10,7 +10,7 @@ export function generateWelcomeEmailContent(
   type: 'register' | 'login' = 'register'
 ): WelcomeEmailData {
   const isTier2 = user.kycTier >= 2;
-  const limitText = isTier2 ? '$10,000 / day' : '$500 / day';
+  const limitText = isTier2 ? '$5,000 / day' : '$200 / day';
   const tierName = isTier2 ? 'Tier 2 (Standard Verified)' : 'Tier 1 (Starter)';
   const now = new Date();
   const formattedDate = now.toUTCString();

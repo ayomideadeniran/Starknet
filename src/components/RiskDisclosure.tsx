@@ -74,7 +74,7 @@ export default function RiskDisclosure() {
                 <strong style={{ color: 'var(--text-main)' }}>NOT Government-Insured:</strong> Crypto assets carry no FDIC/SIPC coverage against broad market price volatility.
               </div>
               <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                <strong style={{ color: 'var(--text-main)' }}>NOT a Substitute for Emergency Cash:</strong> Starter allocations start from $200; only allocate discretionary capital.
+                <strong style={{ color: 'var(--text-main)' }}>NOT a Substitute for Emergency Cash:</strong> Starter allocations start from $50; only allocate discretionary capital.
               </div>
             </div>
           </div>

@@ -19,8 +19,8 @@ export default function InvestmentPlanModal({
   userEmail,
   onInvestmentCreated,
 }: InvestmentPlanModalProps) {
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('gold-institutional');
-  const [amountUsd, setAmountUsd] = useState<number>(5000);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('silver-growth');
+  const [amountUsd, setAmountUsd] = useState<number>(100);
   const [autoReinvest, setAutoReinvest] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -31,13 +31,13 @@ export default function InvestmentPlanModal({
 
   // Quick preset amounts
   const presetAmounts = [
+    { label: '$50', value: 50 },
+    { label: '$100', value: 100 },
+    { label: '$250', value: 250 },
+    { label: '$500', value: 500 },
     { label: '$1,000', value: 1000 },
     { label: '$2,500', value: 2500 },
     { label: '$5,000', value: 5000 },
-    { label: '$10,000', value: 10000 },
-    { label: '$25,000', value: 25000 },
-    { label: '$50,000', value: 50000 },
-    { label: '$100,000', value: 100000 },
   ];
 
   // Calculations
@@ -322,7 +322,7 @@ export default function InvestmentPlanModal({
               type="number"
               min={currentPlan.minAmountUsd}
               max={currentPlan.maxAmountUsd}
-              step="100"
+              step="50"
               value={amountUsd}
               onChange={(e) => handleAmountChange(Math.max(0, Number(e.target.value)))}
               style={{

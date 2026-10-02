@@ -19,7 +19,7 @@ export default function AddTransactionModal({
   onAddTransaction,
 }: AddTransactionModalProps) {
   const [txType, setTxType] = useState<'spot_buy' | 'recurring_buy' | 'transfer_in' | 'sell'>('spot_buy');
-  const [amountUsd, setAmountUsd] = useState<number>(250);
+  const [amountUsd, setAmountUsd] = useState<number>(100);
   const [customPrice, setCustomPrice] = useState<number>(Math.round(currentBtcPrice));
   const [notes, setNotes] = useState<string>('');
 
@@ -161,7 +161,7 @@ export default function AddTransactionModal({
             />
             {/* Quick chips */}
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              {[50, 100, 250, 500, 1000].map((v) => (
+              {[50, 100, 250, 500, 1000, 2500, 5000].map((v) => (
                 <button
                   type="button"
                   key={v}

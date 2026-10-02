@@ -125,7 +125,7 @@ function renderStarknetEmailHtml({
                   <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
                     <td style="padding: 12px 14px; border-right: 1px solid rgba(255, 255, 255, 0.06);" width="35%">
                       <strong style="color: #ffffff; display: block; font-size: 13px;">Private Starter</strong>
-                      <span style="color: #ec796b; font-weight: 700; font-size: 11.5px;">$200 – $1,000</span>
+                      <span style="color: #ec796b; font-weight: 700; font-size: 11.5px;">$50 – $250</span>
                     </td>
                     <td style="padding: 12px 14px; color: #94a3b8; font-size: 12px; line-height: 1.4;">
                       Direct ZK-vault participation, automated daily yield accrual, 0% platform deposit surcharge.
@@ -134,7 +134,7 @@ function renderStarknetEmailHtml({
                   <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
                     <td style="padding: 12px 14px; border-right: 1px solid rgba(255, 255, 255, 0.06);">
                       <strong style="color: #ffffff; display: block; font-size: 13px;">Growth Builder</strong>
-                      <span style="color: #10b981; font-weight: 700; font-size: 11.5px;">$1,000 – $10,000</span>
+                      <span style="color: #10b981; font-weight: 700; font-size: 11.5px;">$250 – $1,000</span>
                     </td>
                     <td style="padding: 12px 14px; color: #94a3b8; font-size: 12px; line-height: 1.4;">
                       Automated Dollar-Cost Averaging (DCA), multi-asset funding (USDT, BTC, ETH, STRK, Wire).
@@ -143,7 +143,7 @@ function renderStarknetEmailHtml({
                   <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
                     <td style="padding: 12px 14px; border-right: 1px solid rgba(255, 255, 255, 0.06);">
                       <strong style="color: #ffffff; display: block; font-size: 13px;">Institutional VIP</strong>
-                      <span style="color: #f59e0b; font-weight: 700; font-size: 11.5px;">$10,000 – $50,000</span>
+                      <span style="color: #f59e0b; font-weight: 700; font-size: 11.5px;">$1,000 – $2,500</span>
                     </td>
                     <td style="padding: 12px 14px; color: #94a3b8; font-size: 12px; line-height: 1.4;">
                       Guaranteed vault capacity, dedicated quant manager, priority multi-sig withdrawal routing.
@@ -152,7 +152,7 @@ function renderStarknetEmailHtml({
                   <tr>
                     <td style="padding: 12px 14px; border-right: 1px solid rgba(255, 255, 255, 0.06);">
                       <strong style="color: #ffffff; display: block; font-size: 13px;">White-Glove / OTC</strong>
-                      <span style="color: #a855f7; font-weight: 700; font-size: 11.5px;">$50,000 – $250,000+</span>
+                      <span style="color: #a855f7; font-weight: 700; font-size: 11.5px;">$2,500 – $5,000</span>
                     </td>
                     <td style="padding: 12px 14px; color: #94a3b8; font-size: 12px; line-height: 1.4;">
                       Segregated non-commingled accounts, direct OTC block routing, master legal framework.
@@ -169,7 +169,7 @@ function renderStarknetEmailHtml({
                       Register to Secure Your Allocation Tier
                     </h3>
                     <p style="margin: 0 0 16px; font-size: 12.5px; color: #cbd5e1;">
-                      Select your entry tier from $200 and complete your onboarding profile to guarantee vault placement.
+                      Select your entry tier from $50 and complete your onboarding profile to guarantee vault placement.
                     </p>
                     <a href="${ctaUrl || 'https://starknetsupport.netlify.app/register'}" 
                        target="_blank" 

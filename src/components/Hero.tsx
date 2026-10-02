@@ -97,7 +97,7 @@ export default function Hero({ marketData, satsMode }: HeroProps) {
               margin: '0 auto',
             }}
           >
-            Unlock institutional-grade Bitcoin yields, Layer-2 ZK-rollup execution, and algorithmic vaults starting from $200. Enjoy automated multi-sig security and high-efficiency daily earnings.
+            Unlock institutional-grade Bitcoin yields, Layer-2 ZK-rollup execution, and algorithmic vaults starting from $50. Enjoy automated multi-sig security and high-efficiency daily earnings.
           </p>
         </div>
 
@@ -213,7 +213,7 @@ export default function Hero({ marketData, satsMode }: HeroProps) {
               }}
             >
               <Award size={15} style={{ color: 'var(--brand-btc)' }} />
-              <span>Allocation Tiers ($200+) &darr;</span>
+              <span>Allocation Tiers ($50+) &darr;</span>
             </a>
           </div>
         </div>

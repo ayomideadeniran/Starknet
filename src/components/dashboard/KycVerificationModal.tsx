@@ -386,7 +386,7 @@ export default function KycVerificationModal({ kycProfile, onClose, onVerified }
                 <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>Tier 1: Starter</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Email verified &bull; Limited trial access</div>
               </div>
-              <div className="mono" style={{ fontWeight: 700, fontSize: '0.85rem' }}>$500 / day</div>
+              <div className="mono" style={{ fontWeight: 700, fontSize: '0.85rem' }}>$200 / day</div>
             </div>
 
             {/* Tier 2 (Target) */}
@@ -427,7 +427,7 @@ export default function KycVerificationModal({ kycProfile, onClose, onVerified }
                   color: isVerified ? 'var(--brand-success)' : 'var(--brand-btc)',
                 }}
               >
-                $10,000 / day
+                $5,000 / day
               </div>
             </div>
 
@@ -447,7 +447,7 @@ export default function KycVerificationModal({ kycProfile, onClose, onVerified }
                 <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>Tier 3: Institutional Prime</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Proof of Wealth &bull; Corporate Entity</div>
               </div>
-              <div className="mono" style={{ fontWeight: 700, fontSize: '0.85rem' }}>$100,000 / day</div>
+              <div className="mono" style={{ fontWeight: 700, fontSize: '0.85rem' }}>$5,000 / day</div>
             </div>
           </div>
 
@@ -1177,7 +1177,7 @@ export default function KycVerificationModal({ kycProfile, onClose, onVerified }
                       </div>
                       <div>
                         <span style={{ color: '#94a3b8' }}>Daily Limit:</span>
-                        <div style={{ fontWeight: 700, color: '#10b981' }}>$10,000 / day</div>
+                        <div style={{ fontWeight: 700, color: '#10b981' }}>$5,000 / day</div>
                       </div>
                       <div>
                         <span style={{ color: '#94a3b8' }}>Issued:</span>

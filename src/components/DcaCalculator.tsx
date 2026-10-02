@@ -23,13 +23,13 @@ interface DcaCalculatorProps {
 
 export default function DcaCalculator({ marketData }: DcaCalculatorProps) {
   // Input States: Single Investment Amount, 30% to 50% monthly interest, duration in months
-  const [amount, setAmount] = useState<number>(200);
+  const [amount, setAmount] = useState<number>(100);
   const [monthlyInterestRate, setMonthlyInterestRate] = useState<number>(30); // 30% to 50% monthly
   const [durationMonths, setDurationMonths] = useState<number>(1); // 1, 3, 6, 12 months
 
   // Calculation Logic: 30% to 50% EVERY MONTH directly on your invested capital
   const calculation = useMemo(() => {
-    const validAmount = Math.max(200, Number(amount) || 0);
+    const validAmount = Math.max(50, Number(amount) || 0);
     const validMonthlyRate = Math.min(50, Math.max(30, Number(monthlyInterestRate) || 30));
     const monthlyRateFraction = validMonthlyRate / 100; // e.g. 0.30, 0.40, 0.50
 
@@ -107,7 +107,7 @@ export default function DcaCalculator({ marketData }: DcaCalculatorProps) {
               lineHeight: 1.6,
             }}
           >
-            Earn guaranteed <strong style={{ color: 'var(--text-main)' }}>30% to 50% monthly interest</strong> on your capital. Calculate your exact monthly payout starting from $200.
+            Earn guaranteed <strong style={{ color: 'var(--text-main)' }}>30% to 50% monthly interest</strong> on your capital. Calculate your exact monthly payout starting from $50.
           </p>
         </div>
 
@@ -147,10 +147,11 @@ export default function DcaCalculator({ marketData }: DcaCalculatorProps) {
 
               <input
                 type="number"
-                min="200"
-                step="100"
+                min="50"
+                max="5000"
+                step="50"
                 value={amount}
-                onChange={(e) => setAmount(Math.max(200, Number(e.target.value)))}
+                onChange={(e) => setAmount(Math.max(50, Number(e.target.value)))}
                 style={{
                   width: '100%',
                   padding: '0.85rem 1rem',
@@ -169,7 +170,7 @@ export default function DcaCalculator({ marketData }: DcaCalculatorProps) {
 
               {/* Quick Select Buttons */}
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                {[200, 1000, 5000, 10000, 50000].map((val) => (
+                {[50, 100, 250, 500, 1000, 2500, 5000].map((val) => (
                   <button
                     key={val}
                     onClick={() => setAmount(val)}

@@ -36,35 +36,35 @@ import { ALL_COUNTRIES_DATA } from '@/lib/countries-data';
 const INVESTMENT_TIERS = [
   {
     id: 'starter',
-    label: '$200 – $1,000',
+    label: '$50 – $250',
     subtitle: 'Private Starter Allocation',
     badge: 'Starter Access',
     desc: 'Accessible entry point with full Starknet ZK-vault yield privileges and zero launch fees.',
   },
   {
     id: 'standard',
-    label: '$1,000 – $10,000',
+    label: '$250 – $1,000',
     subtitle: 'Standard Growth Tier',
     badge: 'Growth Tier',
     desc: 'Automated DCA scheduling and institutional multi-sig custody routing.',
   },
   {
     id: 'growth',
-    label: '$10,000 – $50,000',
+    label: '$1,000 – $2,500',
     subtitle: 'High-Yield Wealth Builder',
     badge: 'Most Popular',
     desc: 'Guaranteed 30% – 50% monthly yield vault allocation and dedicated quantitative manager.',
   },
   {
     id: 'institutional',
-    label: '$50,000 – $250,000',
+    label: '$2,500 – $4,000',
     subtitle: 'Institutional Custody Tier',
     badge: 'Priority VIP',
     desc: 'Segregated non-commingled accounts and master institutional custody framework.',
   },
   {
     id: 'whale',
-    label: '$250,000+',
+    label: '$4,000 – $5,000',
     subtitle: 'Private Office / OTC Execution',
     badge: 'Executive White-Glove',
     desc: 'Bespoke delta-neutral arbitrage vaults, private office briefings, and OTC desk.',
@@ -81,7 +81,7 @@ const STRATEGY_INTERESTS = [
 ];
 
 const INVESTOR_TYPES = [
-  'Individual / Private Investor ($200+ Starter)',
+  'Individual / Private Investor ($50+ Starter)',
   'Active Bitcoin & Web3 Trader',
   'Accredited / High-Net-Worth Individual',
   'Family Office / Private Wealth Manager',
@@ -141,9 +141,9 @@ export default function GrandOpeningWishlistPage() {
   const [phonePrefix, setPhonePrefix] = useState('+1');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [country, setCountry] = useState('United States');
-  const [investmentTier, setInvestmentTier] = useState('$10,000 – $50,000');
+  const [investmentTier, setInvestmentTier] = useState('$1,000 – $2,500');
   const [paymentMethod, setPaymentMethod] = useState('USDT / USDC (Stablecoins)');
-  const [investorType, setInvestorType] = useState('Individual / Private Investor ($200+ Starter)');
+  const [investorType, setInvestorType] = useState('Individual / Private Investor ($50+ Starter)');
   const [primaryInterest, setPrimaryInterest] = useState(STRATEGY_INTERESTS[0]);
   const [telegramHandle, setTelegramHandle] = useState('');
   const [referralCode, setReferralCode] = useState('');
@@ -437,7 +437,7 @@ export default function GrandOpeningWishlistPage() {
                 margin: '0 auto 1.75rem',
               }}
             >
-              Reserve priority on the Bitcoin &amp; Starknet Layer-2 Ecosystem. Registered participants secure guaranteed vault capacity starting from <strong style={{ color: 'var(--text-main)' }}>$200</strong>, complete platform fee waivers during launch week, and direct access to the 30% – 50% monthly interest institutional vault.
+              Reserve priority on the Bitcoin &amp; Starknet Layer-2 Ecosystem. Registered participants secure guaranteed vault capacity starting from <strong style={{ color: 'var(--text-main)' }}>$50</strong>, complete platform fee waivers during launch week, and direct access to the 30% – 50% monthly interest institutional vault.
             </p>
 
             {/* Privilege Feature Ribbons */}
@@ -452,7 +452,7 @@ export default function GrandOpeningWishlistPage() {
               }}
             >
               {[
-                { label: 'Entry From $200', icon: '🪙' },
+                { label: 'Entry From $50', icon: '🪙' },
                 { label: '30% – 50% Monthly Yield', icon: '⚡' },
                 { label: 'Multi-Sig Cold Custody', icon: '🛡️' },
                 { label: '0% Launch Fees', icon: '🎉' },
@@ -1157,7 +1157,7 @@ export default function GrandOpeningWishlistPage() {
                     {[
                       {
                         title: 'Guaranteed Capacity',
-                        desc: 'Access to 30% – 50% monthly yield Starknet ZK-vault starting from $200.',
+                        desc: 'Access to 30% – 50% monthly yield Starknet ZK-vault starting from $50.',
                       },
                       {
                         title: '0% Launch Fees',
@@ -1237,7 +1237,7 @@ export default function GrandOpeningWishlistPage() {
                     Need Private OTC Consultation?
                   </h4>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1rem' }}>
-                    For allocations above $250,000 or custom treasury custody arrangements.
+                    For allocations above $5,000 or custom treasury custody arrangements.
                   </p>
                   <a
                     href={`https://t.me/${(process.env.NEXT_PUBLIC_TELEGRAM_SUPPORT_USERNAME || 'StarknetSupport').replace('@', '').trim()}`}

@@ -11,9 +11,9 @@ const STEPS = [
     subtitle: 'Pre-Launch Whitelist',
     icon: Sparkles,
     color: 'var(--brand-btc)',
-    summary: 'Reserve your vault allocation tier starting from just $200. Wishlist members receive guaranteed vault access, 0% platform fees during launch week, and early onboarding passes.',
+    summary: 'Reserve your vault allocation tier starting from just $50. Wishlist members receive guaranteed vault access, 0% platform fees during launch week, and early onboarding passes.',
     highlights: [
-      'Accessible entry points from $200 up to $250,000+ institutional allocations',
+      'Accessible entry points from $50 up to $5,000 allocations',
       'Instant minting of your unique Grand Opening VIP Priority Pass',
       'Zero upfront commitment required during pre-launch'
     ],

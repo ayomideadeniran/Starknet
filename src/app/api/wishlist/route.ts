@@ -121,8 +121,8 @@ export async function POST(request: Request) {
 
     // Assign VIP/Institutional priority based on tier
     const isInstitutional =
-      investmentTier === '$250,000+' ||
-      investmentTier === '$50,000 – $250,000' ||
+      investmentTier === '$4,000 – $5,000' ||
+      investmentTier === '$2,500 – $4,000' ||
       investorType === 'Family Office' ||
       investorType === 'Corporate Treasury';
     const priorityStatus = isInstitutional ? 'Institutional' : 'VIP';
@@ -139,9 +139,9 @@ export async function POST(request: Request) {
       phonePrefix: body.phonePrefix || undefined,
       phoneNumber: body.phoneNumber || undefined,
       country: cleanCountry,
-      investmentTier: investmentTier || '$10,000 – $50,000',
+      investmentTier: investmentTier || '$1,000 – $2,500',
       paymentMethod: cleanPaymentMethod,
-      investorType: investorType || 'Individual / Private Investor ($200+ Starter)',
+      investorType: investorType || 'Individual / Private Investor ($50+ Starter)',
       primaryInterest: primaryInterest || 'Starknet Bitcoin ZK-Vault & 30% – 50% Monthly Yield',
       telegramHandle: telegramHandle ? String(telegramHandle).trim() : undefined,
       referralCode: referralCode ? String(referralCode).trim() : undefined,

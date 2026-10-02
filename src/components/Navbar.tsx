@@ -84,7 +84,7 @@ export default function Navbar({ satsMode, onToggleSatsMode }: NavbarProps) {
   const navLinks = [
     { label: 'How It Works', href: '#how-it-works', icon: Compass },
     { label: 'Yield Calculator', href: '#calculator', icon: Calculator },
-    { label: 'Vault Tiers ($200+)', href: '#tiers', icon: Layers },
+    { label: 'Vault Tiers ($50+)', href: '#tiers', icon: Layers },
     { label: 'Fees & Gas', href: '#fees', icon: Zap },
     { label: 'Risks', href: '#risks', icon: ShieldCheck },
     { label: 'FAQ', href: '#faq', icon: HelpCircle },

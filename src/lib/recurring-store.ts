@@ -3,24 +3,24 @@ import { RecurringSchedule } from './types';
 export const SEED_SCHEDULES: RecurringSchedule[] = [
   {
     id: 'rec-1',
-    amountUsd: 25,
+    amountUsd: 50,
     frequency: 'weekly',
     paymentMethod: 'ach_bank',
     startDate: '2026-08-15',
     nextRunDate: '2026-09-15',
     status: 'active',
-    totalInvestedUsd: 100,
+    totalInvestedUsd: 200,
     executionCount: 4,
   },
   {
     id: 'rec-2',
-    amountUsd: 100,
+    amountUsd: 250,
     frequency: 'monthly',
     paymentMethod: 'ach_bank',
     startDate: '2026-07-01',
     nextRunDate: '2026-10-01',
     status: 'paused',
-    totalInvestedUsd: 200,
+    totalInvestedUsd: 500,
     executionCount: 2,
   },
 ];

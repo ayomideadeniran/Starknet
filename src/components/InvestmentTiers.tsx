@@ -9,8 +9,8 @@ export default function InvestmentTiers() {
     {
       name: 'Private Starter',
       badge: 'Starter Allocation',
-      startingAmount: '$200',
-      range: '$200 – $1,000',
+      startingAmount: '$50',
+      range: '$50 – $250',
       icon: <Shield size={22} style={{ color: '#38bdf8' }} />,
       glowColor: 'rgba(56, 189, 248, 0.3)',
       borderColor: '#38bdf8',
@@ -25,8 +25,8 @@ export default function InvestmentTiers() {
     {
       name: 'Standard Growth',
       badge: 'Wealth Builder',
-      startingAmount: '$1,000',
-      range: '$1,000 – $10,000',
+      startingAmount: '$250',
+      range: '$250 – $1,000',
       icon: <Layers size={22} style={{ color: '#10b981' }} />,
       glowColor: 'rgba(16, 185, 129, 0.3)',
       borderColor: '#10b981',
@@ -41,8 +41,8 @@ export default function InvestmentTiers() {
     {
       name: 'Wealth Builder',
       badge: 'Most Popular',
-      startingAmount: '$10,000',
-      range: '$10,000 – $50,000',
+      startingAmount: '$1,000',
+      range: '$1,000 – $2,500',
       icon: <Zap size={22} style={{ color: 'var(--brand-btc)' }} />,
       glowColor: 'var(--brand-btc-glow)',
       borderColor: 'var(--brand-btc)',
@@ -59,8 +59,8 @@ export default function InvestmentTiers() {
     {
       name: 'Institutional Custody',
       badge: 'Priority VIP',
-      startingAmount: '$50,000',
-      range: '$50,000 – $250,000',
+      startingAmount: '$2,500',
+      range: '$2,500 – $4,000',
       icon: <Building2 size={22} style={{ color: '#a855f7' }} />,
       glowColor: 'rgba(168, 85, 247, 0.3)',
       borderColor: '#a855f7',
@@ -76,8 +76,8 @@ export default function InvestmentTiers() {
     {
       name: 'Executive White-Glove',
       badge: 'Private Office / OTC',
-      startingAmount: '$250,000+',
-      range: '$250,000+ Unlimited',
+      startingAmount: '$4,000',
+      range: '$4,000 – $5,000',
       icon: <Crown size={22} style={{ color: '#eab308' }} />,
       glowColor: 'rgba(234, 179, 8, 0.35)',
       borderColor: '#eab308',
@@ -134,7 +134,7 @@ export default function InvestmentTiers() {
           </div>
           <h2 className="section-title">Bitcoin &amp; Starknet Allocation Tiers</h2>
           <p className="section-subtitle">
-            Capital tiers engineered for everyone from private starter investors ($200+) to institutional treasuries and family offices.
+            Capital tiers engineered for everyone from private starter investors ($50+) to allocations of up to $5,000.
           </p>
         </div>
 

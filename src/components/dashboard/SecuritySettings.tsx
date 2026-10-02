@@ -112,7 +112,7 @@ Legal Compliance:  ESIGN Act (15 U.S.C. § 7001) & EU eIDAS
                 <CheckCircle2 size={16} style={{ color: 'var(--brand-success)' }} />
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                Verification Tier: <strong style={{ color: 'var(--brand-success)' }}>Tier 2 Standard Investor</strong> &bull; Daily Limit: $10,000 / day
+                Verification Tier: <strong style={{ color: 'var(--brand-success)' }}>Tier 2 Standard Investor</strong> &bull; Daily Limit: $5,000 / day
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                 Audited via: Stripe Identity™ 3D Biometric Liveness Gateway

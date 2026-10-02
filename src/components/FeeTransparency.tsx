@@ -39,7 +39,7 @@ export default function FeeTransparency({ marketData, satsMode }: FeeTransparenc
   // Starknet L2 gas cost (< $0.03) vs Bitcoin L1 ($1.64)
   const starknetFeeDisplay = '< $0.03';
 
-  const quickPresets = [25, 50, 100, 250, 500, 1000];
+  const quickPresets = [50, 100, 250, 500, 1000, 2500, 5000];
 
   return (
     <section id="fees" className="section-wrapper" style={{ background: 'var(--bg-surface)' }}>
@@ -157,8 +157,8 @@ export default function FeeTransparency({ marketData, satsMode }: FeeTransparenc
               <input
                 id="purchase-amount-input"
                 type="range"
-                min="25"
-                max="1000"
+                min="50"
+                max="5000"
                 step="25"
                 value={purchaseAmount}
                 onChange={(e) => setPurchaseAmount(Number(e.target.value))}
