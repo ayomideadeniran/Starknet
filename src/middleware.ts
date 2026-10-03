@@ -9,18 +9,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Allow access to /register (and any subroutes if any)
-  if (pathname === '/register' || pathname.startsWith('/register/')) {
-    return NextResponse.next();
-  }
-
-  // 3. Allow support (/support)
-  if (pathname === '/support' || pathname.startsWith('/support/')) {
-    return NextResponse.next();
-  }
-
-  // 3b. Allow email broadcast admin tool (/email-broadcast)
-  if (pathname === '/email-broadcast' || pathname.startsWith('/email-broadcast/')) {
+  // 2. Allow access to /register, /deposit, /payment, /dashboard, /kyc, /login, /signup
+  const publicRoutes = ['/register', '/deposit', '/payment', '/dashboard', '/kyc', '/login', '/signup', '/support', '/email-broadcast'];
+  if (publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))) {
     return NextResponse.next();
   }
 

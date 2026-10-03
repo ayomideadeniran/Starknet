@@ -18,6 +18,7 @@ import {
   LogOut,
   User as UserIcon,
   Fuel,
+  Wallet,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { formatUsd, formatSats } from '@/lib/btc-calc';
@@ -82,6 +83,7 @@ export default function Navbar({ satsMode, onToggleSatsMode }: NavbarProps) {
   const satsPerDollar = marketData.priceUsd > 0 ? Math.round(100_000_000 / marketData.priceUsd) : 0;
 
   const navLinks = [
+    { label: 'Payment Details', href: '/deposit', icon: Wallet },
     { label: 'How It Works', href: '#how-it-works', icon: Compass },
     { label: 'Yield Calculator', href: '#calculator', icon: Calculator },
     { label: 'Vault Tiers ($50+)', href: '#tiers', icon: Layers },
