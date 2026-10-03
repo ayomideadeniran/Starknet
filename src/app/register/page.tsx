@@ -28,6 +28,7 @@ import {
   Shield,
   HelpCircle,
   ExternalLink,
+  Wallet,
 } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { calculateCurrentWaitlistBase, useCountUp } from '@/lib/waitlist-utils';
@@ -999,6 +1000,34 @@ export default function GrandOpeningWishlistPage() {
                         );
                       })}
                     </div>
+
+                    {/* MetaMask Required Payment Notice Box */}
+                    <div
+                      style={{
+                        marginTop: '1.25rem',
+                        padding: '1.15rem 1.25rem',
+                        borderRadius: '0.9rem',
+                        background: 'rgba(236, 121, 107, 0.08)',
+                        border: '1.5px solid rgba(236, 121, 107, 0.35)',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.85rem',
+                      }}
+                    >
+                      <Wallet size={24} style={{ color: '#ec796b', flexShrink: 0, marginTop: '2px' }} />
+                      <div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
+                          MetaMask Web3 Wallet Requirement
+                        </div>
+                        <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+                          <strong style={{ color: 'var(--text-main)' }}>Please Note:</strong> You must have <strong>MetaMask installed and know how to use it</strong> to execute deposits and payments on our platform. MetaMask is our primary Web3 payment gateway. If you do not have MetaMask, need payment assistance, or encounter any deposit issues, please{' '}
+                          <Link href="/support" style={{ color: '#ec796b', fontWeight: 700, textDecoration: 'underline' }}>
+                            message our 24/7 Support Desk
+                          </Link>{' '}
+                          or reach out directly for help.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* STEP 4: OPTIONAL DETAILS & VIP PREFERENCES */}
@@ -1219,6 +1248,27 @@ export default function GrandOpeningWishlistPage() {
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.55 }}>
                     Starknet STARK proofs and Cairo contracts mathematically verify all vault operations off-chain. No seed phrases or private keys will ever be requested.
+                  </p>
+                </div>
+
+                {/* Card 2b: MetaMask Requirement Notice */}
+                <div
+                  className="glass-card"
+                  style={{
+                    padding: '1.5rem',
+                    borderRadius: '1.25rem',
+                    background: 'rgba(236, 121, 107, 0.08)',
+                    border: '1px solid rgba(236, 121, 107, 0.3)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <Wallet size={18} style={{ color: '#ec796b' }} />
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                      MetaMask Web3 Requirement
+                    </h4>
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>
+                    <strong>MetaMask is the required payment gateway</strong> on our platform. Users must have MetaMask installed and know how to use it. Having payment issues? <Link href="/support" style={{ color: '#ec796b', fontWeight: 700, textDecoration: 'underline' }}>Message Support</Link> for assistance.
                   </p>
                 </div>
 
