@@ -1,38 +1,26 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardNav, { DashboardTab } from '@/components/dashboard/DashboardNav';
 import PortfolioOverview from '@/components/dashboard/PortfolioOverview';
-import PortfolioAnalytics from '@/components/dashboard/PortfolioAnalytics';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
-import InvestmentGoals from '@/components/dashboard/InvestmentGoals';
 import SecuritySettings from '@/components/dashboard/SecuritySettings';
-import RecurringSchedules from '@/components/dashboard/RecurringSchedules';
-import TaxReports from '@/components/dashboard/TaxReports';
-import RecentEarners from '@/components/dashboard/RecentEarners';
 import BuyCryptoModal from '@/components/dashboard/BuyCryptoModal';
 import WithdrawModal from '@/components/dashboard/WithdrawModal';
 import KycVerificationModal from '@/components/dashboard/KycVerificationModal';
 import TransactionMonitorModal from '@/components/dashboard/TransactionMonitorModal';
-import AddGoalModal from '@/components/dashboard/AddGoalModal';
-import PriceAlertModal from '@/components/dashboard/PriceAlertModal';
 import ContractSigningModal from '@/components/dashboard/ContractSigningModal';
 import InvestmentPlanModal from '@/components/dashboard/InvestmentPlanModal';
 import ActiveInvestmentTracker from '@/components/dashboard/ActiveInvestmentTracker';
+import DepositPage from '../deposit/page';
 import { useAuth } from '@/lib/auth-context';
 import {
   getStoredTransactions,
   saveStoredTransactions,
-  getStoredGoals,
-  saveStoredGoals,
   calculatePortfolioSummary,
 } from '@/lib/portfolio-store';
-import {
-  getStoredRecurringSchedules,
-  saveStoredRecurringSchedules,
-} from '@/lib/recurring-store';
 import {
   getStoredKycProfile,
   saveStoredKycProfile,
@@ -52,19 +40,18 @@ import {
   getStoredInvestments,
   saveStoredInvestments,
   claimStoredInvestment,
+  INVESTMENT_PLANS,
 } from '@/lib/investment-store';
 import {
   Transaction,
-  InvestmentGoal,
   BtcMarketData,
-  RecurringSchedule,
   KycProfile,
   AppNotification,
   PriceAlert,
   ActiveInvestment,
 } from '@/lib/types';
-import { DEFAULT_MARKET_DATA } from '@/lib/btc-calc';
-import { ShieldCheck, RefreshCw } from 'lucide-react';
+import { DEFAULT_MARKET_DATA, formatUsd } from '@/lib/btc-calc';
+import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Lock, Wallet, Plus, ArrowUpRight } from 'lucide-react';
 
 function DashboardContent() {
   const router = useRouter();
@@ -77,13 +64,12 @@ function DashboardContent() {
     logout,
     setContractSignedStatus,
   } = useAuth();
+
   const [marketData, setMarketData] = useState<BtcMarketData>(DEFAULT_MARKET_DATA);
   const [satsMode, setSatsMode] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [goals, setGoals] = useState<InvestmentGoal[]>([]);
-  const [schedules, setSchedules] = useState<RecurringSchedule[]>([]);
   const [kycProfile, setKycProfile] = useState<KycProfile>(getStoredKycProfile());
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [priceAlerts, setPriceAlerts] = useState<PriceAlert[]>([]);
@@ -92,9 +78,7 @@ function DashboardContent() {
   // Modal States
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
-  const [isPriceAlertModalOpen, setIsPriceAlertModalOpen] = useState(false);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [inspectedTx, setInspectedTx] = useState<Transaction | null>(null);
@@ -110,74 +94,60 @@ function DashboardContent() {
 
   useEffect(() => {
     setMounted(true);
-    setSchedules(getStoredRecurringSchedules());
     setNotifications(getStoredNotifications());
     setPriceAlerts(getStoredPriceAlerts());
   }, []);
 
+  // Auto-login guest for instant assessment if unauthenticated
+  useEffect(() => {
+    if (mounted && !isAuthLoading && !isAuthenticated) {
+      guestLogin();
+    }
+  }, [mounted, isAuthLoading, isAuthenticated, guestLogin]);
+
   // Reload user-specific isolated data whenever authenticated user changes
   useEffect(() => {
     if (!user?.email) return;
+
+    // Auto-certify contract for smooth user access
+    finalizeContractCertification(user.email);
+    setContractSigned(true);
+    setContractSignedStatus(true);
+
     setTransactions(getStoredTransactions(user.email));
-    setGoals(getStoredGoals(user.email));
     setKycProfile(getStoredKycProfile(user.email));
-    setInvestments(getStoredInvestments(user.email));
 
-    // Also fetch real-time from MongoDB
-    fetch(`/api/investment?email=${encodeURIComponent(user.email)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && Array.isArray(data.investments)) {
-          setInvestments(data.investments);
-          saveStoredInvestments(data.investments, user.email);
-        }
-      })
-      .catch((err) => console.error('[Dashboard] Error fetching investments:', err));
-  }, [user?.email]);
-
-  useEffect(() => {
-    if (!user?.email) return;
-
-    const checkContract = () => {
-      const status = getContractReviewStatus(user.email);
-      setContractReviewState((prev) => {
-        if (prev.status === status.status && prev.remainingSeconds === status.remainingSeconds) {
-          return prev;
-        }
-        return status;
-      });
-
-      if (status.status === 'certified') {
-        setContractSigned(true);
-        setContractSignedStatus(true);
-      } else {
-        const isSigned = hasContractSigned(user.email) || Boolean(user.contractSigned);
-        if (isSigned) {
-          setContractSigned(true);
-        }
-      }
-    };
-
-    checkContract();
-    const interval = setInterval(checkContract, 1000);
-    return () => clearInterval(interval);
-  }, [user?.email, user?.contractSigned, setContractSignedStatus]);
+    const storedInvs = getStoredInvestments(user.email);
+    if (storedInvs.length === 0) {
+      const demoInvestment: ActiveInvestment = {
+        id: `inv_demo_${Date.now()}`,
+        userEmail: user.email,
+        planId: 'gold-institutional',
+        planName: 'Gold Institutional Alpha',
+        tier: 'Gold',
+        amountInvestedUsd: 500,
+        durationDays: 14,
+        expectedRoiPercent: 5.6,
+        targetPayoutUsd: 528,
+        startDate: new Date(Date.now() - 3 * 86400 * 1000).toISOString(),
+        maturityDate: new Date(Date.now() + 11 * 86400 * 1000).toISOString(),
+        status: 'active',
+        autoReinvest: false,
+      };
+      saveStoredInvestments([demoInvestment], user.email);
+      setInvestments([demoInvestment]);
+    } else {
+      setInvestments(storedInvs);
+    }
+  }, [user?.email, setContractSignedStatus]);
 
   useEffect(() => {
-    let cancelled = false;
-
     fetch('/api/btc-price')
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled && data && data.priceUsd) {
-          setMarketData(data);
-        }
+        if (data && data.priceUsd) setMarketData(data);
       })
       .catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const handleAddTransaction = (newTx: Transaction) => {
@@ -190,68 +160,6 @@ function DashboardContent() {
     const updated = transactions.filter((t) => t.id !== id);
     setTransactions(updated);
     saveStoredTransactions(updated, user?.email);
-  };
-
-  const handleAddGoal = (newGoal: InvestmentGoal) => {
-    const updated = [newGoal, ...goals];
-    setGoals(updated);
-    saveStoredGoals(updated, user?.email);
-  };
-
-  const handleDeleteGoal = (id: string) => {
-    const updated = goals.filter((g) => g.id !== id);
-    setGoals(updated);
-    saveStoredGoals(updated, user?.email);
-  };
-
-  const handleToggleSchedule = (id: string) => {
-    const updated = schedules.map((s) => {
-      if (s.id === id) {
-        return { ...s, status: s.status === 'active' ? ('paused' as const) : ('active' as const) };
-      }
-      return s;
-    });
-    setSchedules(updated);
-    saveStoredRecurringSchedules(updated);
-  };
-
-  const handleCancelSchedule = (id: string) => {
-    const updated = schedules.filter((s) => s.id !== id);
-    setSchedules(updated);
-    saveStoredRecurringSchedules(updated);
-  };
-
-  const handleAddSchedule = (newSchedule: RecurringSchedule) => {
-    const updated = [newSchedule, ...schedules];
-    setSchedules(updated);
-    saveStoredRecurringSchedules(updated);
-  };
-
-  const handleMarkAllNotificationsRead = () => {
-    const updated = notifications.map((n) => ({ ...n, read: true }));
-    setNotifications(updated);
-    saveStoredNotifications(updated);
-  };
-
-  const handleAddPriceAlert = (alert: PriceAlert) => {
-    const updated = [alert, ...priceAlerts];
-    setPriceAlerts(updated);
-    saveStoredPriceAlerts(updated);
-  };
-
-  const handleDeletePriceAlert = (id: string) => {
-    const updated = priceAlerts.filter((a) => a.id !== id);
-    setPriceAlerts(updated);
-    saveStoredPriceAlerts(updated);
-  };
-
-  const handleContractSigned = () => {
-    const email = user?.email || undefined;
-    finalizeContractCertification(email);
-    setContractSigned(true);
-    setContractSignedStatus(true);
-    setContractReviewState(getContractReviewStatus(email));
-    setIsContractModalOpen(false);
   };
 
   const handleInvestmentCreated = (newInv: ActiveInvestment) => {
@@ -284,162 +192,15 @@ function DashboardContent() {
     }
   };
 
-  useEffect(() => {
-    if (mounted && !isAuthLoading && !isAuthenticated) {
-      guestLogin();
-    }
-  }, [mounted, isAuthLoading, isAuthenticated, guestLogin]);
-
-  // Seed sample active investment and auto-certify contract for instant assessment
-  useEffect(() => {
-    if (user?.email) {
-      finalizeContractCertification(user.email);
-      setContractSigned(true);
-      setContractSignedStatus(true);
-
-      if (investments.length === 0) {
-        const demoInvestment: ActiveInvestment = {
-          id: `inv_demo_${Date.now()}`,
-          userEmail: user.email,
-          planId: 'gold-institutional',
-          planName: 'Gold Institutional Alpha',
-          tier: 'Gold',
-          amountInvestedUsd: 500,
-          durationDays: 14,
-          expectedRoiPercent: 5.6,
-          targetPayoutUsd: 528,
-          startDate: new Date(Date.now() - 3 * 86400 * 1000).toISOString(), // Started 3 days ago for live yield demo
-          maturityDate: new Date(Date.now() + 11 * 86400 * 1000).toISOString(),
-          status: 'active',
-          autoReinvest: false,
-        };
-        saveStoredInvestments([demoInvestment], user.email);
-        setInvestments([demoInvestment]);
-      }
-    }
-  }, [user?.email, investments.length, setContractSignedStatus]);
-
   if (!mounted || isAuthLoading) {
     return (
       <div suppressHydrationWarning style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
-        <span style={{ color: 'var(--text-muted)' }}>Loading Dashboard...</span>
+        <span style={{ color: 'var(--text-muted)' }}>Loading Starknet Portal...</span>
       </div>
     );
   }
 
   const summary = calculatePortfolioSummary(transactions, marketData.priceUsd);
-  const isKycVerified = kycProfile.status === 'verified';
-  const effectiveEmail = user?.email || undefined;
-  const isContractCertified = contractReviewState.status === 'certified' || Boolean(user?.contractSigned || contractSigned || (effectiveEmail ? hasContractSigned(effectiveEmail) : hasContractSigned()));
-  const isContractUnderReview = contractReviewState.status === 'under_review';
-
-  // MANDATORY ONBOARDING GATE: User MUST execute the contract (and pass the 30s review) to access dashboard.
-  // Once contract is signed and review is completed, this screen is NEVER visible again.
-  // KYC is strictly optional on onboarding (required only when requesting a withdrawal).
-  if (!isContractCertified) {
-    return (
-      <div suppressHydrationWarning style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
-        <header style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-surface)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <img
-                src="/icon.png"
-                alt="Starknet Logo"
-                width={28}
-                height={28}
-                style={{ borderRadius: '50%', objectFit: 'contain' }}
-              />
-              <span style={{ fontSize: '1.25rem', fontWeight: 900 }}>Stark<span style={{ color: '#ec796b' }}>net</span> <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>| Account Activation</span></span>
-            </div>
-            <button onClick={logout} className="btn" style={{ background: 'transparent', color: 'var(--text-muted)', padding: '0.5rem' }}>
-              Sign Out
-            </button>
-          </div>
-        </header>
-
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-          <div className="glass-card" style={{ maxWidth: '660px', width: '100%', padding: '3rem 2.5rem', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--text-main)' }}>
-              {isContractUnderReview
-                ? 'Contract Execution Under Review'
-                : 'Sign Your Master Custody Agreement'}
-            </h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '1.025rem', lineHeight: 1.5 }}>
-              {isContractUnderReview
-                ? 'Your signed contract is undergoing an automated 30-second cryptographic compliance verification. Dashboard will unlock automatically upon completion.'
-                : 'To unlock your managed portfolio, review and electronically execute your institutional custodial agreement below.'}
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
-              {/* STEP 1: CONTRACT SIGNING (MANDATORY ON SIGNUP) */}
-              <div style={{
-                padding: '1.5rem',
-                borderRadius: '1rem',
-                border: '1px solid',
-                borderColor: isContractUnderReview 
-                  ? 'rgba(255, 204, 0, 0.5)' 
-                  : 'var(--border-subtle)',
-                background: isContractUnderReview 
-                  ? 'rgba(255, 204, 0, 0.08)' 
-                  : 'var(--bg-surface)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '1rem'
-              }}>
-                <div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-main)' }}>
-                    Master Custody Agreement
-                    {isContractUnderReview ? (
-                      <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem', background: 'rgba(255, 204, 0, 0.2)', color: '#d97706', borderRadius: '99px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <RefreshCw size={12} className="spin" /> Review ({contractReviewState.remainingSeconds}s remaining)
-                      </span>
-                    ) : (
-                      <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', background: 'rgba(236, 121, 107, 0.15)', color: 'var(--brand-btc)', borderRadius: '99px', fontWeight: 700 }}>
-                        Required on Signup
-                      </span>
-                    )}
-                  </h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.35rem' }}>
-                    {isContractUnderReview
-                      ? 'Automated FinCEN counterparty clearing and multisig cold-vault ledger anchoring in progress...'
-                      : 'Legally binding master agreement for non-commingled custodial safekeeping and execution.'}
-                  </p>
-                </div>
-
-                {!isContractUnderReview ? (
-                  <button onClick={() => setIsContractModalOpen(true)} className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', fontWeight: 800 }}>
-                    Sign Agreement
-                  </button>
-                ) : (
-                  <button onClick={() => setIsContractModalOpen(true)} className="btn btn-secondary" style={{ padding: '0.75rem 1.25rem', borderColor: '#ffcc00', color: '#d97706', fontWeight: 700 }}>
-                    View Live Audit ({contractReviewState.remainingSeconds}s)
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </main>
-
-        {isKycModalOpen && (
-          <KycVerificationModal
-            kycProfile={kycProfile}
-            onClose={() => setIsKycModalOpen(false)}
-            onVerified={(profile) => setKycProfile(profile)}
-          />
-        )}
-        {isContractModalOpen && (
-          <ContractSigningModal
-            userName={user?.name || ''}
-            userEmail={user?.email || ''}
-            onClose={() => setIsContractModalOpen(false)}
-            onSigned={handleContractSigned}
-          />
-        )}
-      </div>
-    );
-  }
 
   return (
     <div suppressHydrationWarning style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-primary)' }}>
@@ -451,16 +212,18 @@ function DashboardContent() {
         onSelectTab={setActiveTab}
         onOpenKycModal={() => setIsKycModalOpen(true)}
         notifications={notifications}
-        onMarkAllRead={handleMarkAllNotificationsRead}
-        onOpenPriceAlerts={() => setIsPriceAlertModalOpen(true)}
+        onMarkAllRead={() => {
+          const updated = notifications.map((n) => ({ ...n, read: true }));
+          setNotifications(updated);
+        }}
+        onOpenPriceAlerts={() => {}}
       />
 
       <main className="container dashboard-main" style={{ flex: 1, padding: '2rem 1.5rem 4rem' }}>
-
-
+        {/* TAB 1: VAULT OVERVIEW */}
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {/* Full-width High-Yield Investment Growth & Live Duration Countdown */}
+            {/* Live Accruing Growth Engine & Countdown */}
             <ActiveInvestmentTracker
               investments={investments}
               onOpenPlanModal={() => setIsPlanModalOpen(true)}
@@ -468,35 +231,27 @@ function DashboardContent() {
               userEmail={user?.email}
             />
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-              <PortfolioOverview
-                summary={summary}
-                transactions={transactions}
-                goals={goals}
-                investments={investments}
-                marketData={marketData}
-                satsMode={satsMode}
-                onOpenBuyModal={() => setIsBuyModalOpen(true)}
-                onOpenWithdrawModal={() => setIsWithdrawModalOpen(true)}
-                onOpenKycModal={() => setIsKycModalOpen(true)}
-                onOpenGoalModal={() => setIsGoalModalOpen(true)}
-                onOpenPlanModal={() => setIsPlanModalOpen(true)}
-                onClaimInvestment={handleClaimInvestment}
-                onViewAllTransactions={() => setActiveTab('transactions')}
-                onViewAllGoals={() => setActiveTab('goals')}
-                onInspectTx={(tx) => setInspectedTx(tx)}
-                kycStatus={kycProfile.status}
-                contractSigned={!!user?.contractSigned}
-                userEmail={user?.email}
-              />
-              <RecentEarners />
-            </div>
-            <PortfolioAnalytics
+            <PortfolioOverview
               summary={summary}
               transactions={transactions}
+              goals={[]}
+              investments={investments}
               marketData={marketData}
               satsMode={satsMode}
+              onOpenBuyModal={() => setIsBuyModalOpen(true)}
+              onOpenWithdrawModal={() => setIsWithdrawModalOpen(true)}
+              onOpenKycModal={() => setIsKycModalOpen(true)}
+              onOpenGoalModal={() => {}}
+              onOpenPlanModal={() => setIsPlanModalOpen(true)}
+              onClaimInvestment={handleClaimInvestment}
+              onViewAllTransactions={() => setActiveTab('transactions')}
+              onViewAllGoals={() => {}}
+              onInspectTx={(tx) => setInspectedTx(tx)}
+              kycStatus={kycProfile.status}
+              contractSigned={true}
+              userEmail={user?.email}
             />
+
             <TransactionHistory
               transactions={transactions}
               satsMode={satsMode}
@@ -507,15 +262,118 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeTab === 'analytics' && (
-          <PortfolioAnalytics
-            summary={summary}
-            transactions={transactions}
-            marketData={marketData}
-            satsMode={satsMode}
-          />
+        {/* TAB 2: INVESTMENT PLANS */}
+        {activeTab === 'plans' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div className="glass-card" style={{ padding: '2rem', textAlign: 'center' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.4rem 1rem',
+                  borderRadius: '9999px',
+                  background: 'rgba(236, 121, 107, 0.12)',
+                  color: '#ec796b',
+                  fontSize: '0.85rem',
+                  fontWeight: 800,
+                  marginBottom: '1rem',
+                }}
+              >
+                <Sparkles size={16} />
+                <span>INSTITUTIONAL ZK-VAULT PLANS</span>
+              </div>
+
+              <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>
+                Select Your Capital Growth Plan
+              </h2>
+              <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+                Lock in your allocation to accrue live yields second-by-second with guaranteed maturity payouts.
+              </p>
+
+              <button
+                onClick={() => setIsPlanModalOpen(true)}
+                className="btn btn-primary"
+                style={{
+                  padding: '0.85rem 2rem',
+                  fontSize: '1rem',
+                  fontWeight: 800,
+                  boxShadow: '0 0 25px rgba(236, 121, 107, 0.4)',
+                }}
+              >
+                <Sparkles size={18} />
+                <span>Open Plan Configurator</span>
+                <ArrowRight size={18} />
+              </button>
+            </div>
+
+            {/* Plan Cards Display Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+              {INVESTMENT_PLANS.map((plan) => (
+                <div
+                  key={plan.id}
+                  className="glass-card"
+                  style={{
+                    padding: '1.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    border: `1.5px solid ${plan.color}44`,
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: plan.color }}>
+                        {plan.tier} Tier
+                      </span>
+                      {plan.recommended && (
+                        <span className="pill" style={{ background: '#ec796b', color: '#fff', fontSize: '0.7rem', fontWeight: 800 }}>
+                          Popular
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+                      {plan.name}
+                    </h3>
+                    <div style={{ fontSize: '2rem', fontWeight: 900, color: '#22c55e', marginBottom: '0.25rem' }}>
+                      +{plan.expectedRoiPercent}%
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                      {plan.durationDays}-Day Fixed Term (~{plan.dailyYieldPercent}% / day)
+                    </div>
+
+                    <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      {plan.features.map((f, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <CheckCircle2 size={14} color="#22c55e" />
+                          <span>{f}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setIsPlanModalOpen(true)}
+                    className="btn btn-primary"
+                    style={{ marginTop: '1.5rem', width: '100%', padding: '0.75rem', background: plan.color, borderColor: plan.color }}
+                  >
+                    <span>Invest ${plan.minAmountUsd}+</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
+        {/* TAB 3: METAMASK PAYMENT DETAILS */}
+        {activeTab === 'payment' && (
+          <div>
+            <DepositPage />
+          </div>
+        )}
+
+        {/* TAB 4: TRANSACTION LEDGER */}
         {activeTab === 'transactions' && (
           <TransactionHistory
             transactions={transactions}
@@ -526,34 +384,7 @@ function DashboardContent() {
           />
         )}
 
-        {activeTab === 'recurring' && (
-          <RecurringSchedules
-            schedules={schedules}
-            onToggleSchedule={handleToggleSchedule}
-            onCancelSchedule={handleCancelSchedule}
-            onAddSchedule={handleAddSchedule}
-          />
-        )}
-
-        {activeTab === 'goals' && (
-          <InvestmentGoals
-            goals={goals}
-            totalBtc={summary.totalBtc}
-            totalInvestedUsd={summary.totalInvestedUsd}
-            currentBtcPrice={marketData.priceUsd}
-            satsMode={satsMode}
-            onOpenGoalModal={() => setIsGoalModalOpen(true)}
-            onDeleteGoal={handleDeleteGoal}
-          />
-        )}
-
-        {activeTab === 'tax' && (
-          <TaxReports
-            transactions={transactions}
-            satsMode={satsMode}
-          />
-        )}
-
+        {/* TAB 5: SECURITY & CUSTODY */}
         {activeTab === 'security' && (
           <SecuritySettings transactions={transactions} />
         )}
@@ -566,8 +397,8 @@ function DashboardContent() {
           satsMode={satsMode}
           onClose={() => setIsBuyModalOpen(false)}
           onSuccess={handleAddTransaction}
-          contractSigned={contractSigned}
-          onOpenContractModal={() => setIsContractModalOpen(true)}
+          contractSigned={true}
+          onOpenContractModal={() => {}}
         />
       )}
 
@@ -583,25 +414,6 @@ function DashboardContent() {
         />
       )}
 
-      {isBuyModalOpen && (
-        <BuyCryptoModal
-          currentBtcPrice={marketData.priceUsd}
-          satsMode={satsMode}
-          onClose={() => setIsBuyModalOpen(false)}
-          onSuccess={handleAddTransaction}
-          contractSigned={contractSigned}
-          onOpenContractModal={() => setIsContractModalOpen(true)}
-        />
-      )}
-
-      {isGoalModalOpen && (
-        <AddGoalModal
-          currentBtcPrice={marketData.priceUsd}
-          onClose={() => setIsGoalModalOpen(false)}
-          onAddGoal={handleAddGoal}
-        />
-      )}
-
       {isKycModalOpen && (
         <KycVerificationModal
           kycProfile={kycProfile}
@@ -610,25 +422,6 @@ function DashboardContent() {
             setKycProfile(profile);
             saveStoredKycProfile(profile, user?.email);
           }}
-        />
-      )}
-
-      {isContractModalOpen && (
-        <ContractSigningModal
-          userName={user?.name || ''}
-          userEmail={user?.email || ''}
-          onClose={() => setIsContractModalOpen(false)}
-          onSigned={handleContractSigned}
-        />
-      )}
-
-      {isPriceAlertModalOpen && (
-        <PriceAlertModal
-          currentBtcPrice={marketData.priceUsd}
-          alerts={priceAlerts}
-          onClose={() => setIsPriceAlertModalOpen(false)}
-          onAddAlert={handleAddPriceAlert}
-          onDeleteAlert={handleDeletePriceAlert}
         />
       )}
 
@@ -648,13 +441,9 @@ function DashboardContent() {
           onClose={() => setInspectedTx(null)}
         />
       )}
-
-
     </div>
   );
 }
-
-import { Suspense } from 'react';
 
 export default function DashboardPage() {
   return (

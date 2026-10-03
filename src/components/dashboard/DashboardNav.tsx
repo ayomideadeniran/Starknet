@@ -25,11 +25,9 @@ import { BtcMarketData, AppNotification } from '@/lib/types';
 
 export type DashboardTab =
   | 'overview'
-  | 'analytics'
+  | 'plans'
+  | 'payment'
   | 'transactions'
-  | 'recurring'
-  | 'goals'
-  | 'tax'
   | 'security';
 
 interface DashboardNavProps {
@@ -45,13 +43,11 @@ interface DashboardNavProps {
 }
 
 const TABS: { id: DashboardTab; label: string; icon: React.ElementType }[] = [
-  { id: 'overview',      label: 'Overview',  icon: LayoutDashboard },
-  { id: 'analytics',    label: 'Analytics', icon: BarChart3 },
-  { id: 'transactions', label: 'Ledger',    icon: History },
-  { id: 'recurring',    label: 'DCA Plans', icon: RefreshCw },
-  { id: 'goals',        label: 'Goals',     icon: Target },
-  { id: 'tax',          label: 'Taxes',     icon: FileSpreadsheet },
-  { id: 'security',     label: 'Security',  icon: Shield },
+  { id: 'overview',     label: 'Vault Overview', icon: LayoutDashboard },
+  { id: 'plans',        label: 'Investment Plans ($50+)', icon: Zap },
+  { id: 'payment',      label: 'MetaMask Payment Details', icon: ShieldCheck },
+  { id: 'transactions', label: 'Transaction Ledger', icon: History },
+  { id: 'security',     label: 'Security & Custody', icon: Shield },
 ];
 
 export default function DashboardNav({
