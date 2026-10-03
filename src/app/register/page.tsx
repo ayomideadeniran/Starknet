@@ -92,46 +92,11 @@ const INVESTOR_TYPES = [
 
 const PAYMENT_METHODS = [
   {
-    id: 'usdt_usdc',
-    label: 'USDT / USDC (Stablecoins)',
-    badge: 'Fastest Settlement',
-    subtitle: 'Instant multi-chain deposit (TRC20, ERC20, Polygon) with zero volatility.',
-    icon: '🪙',
-  },
-  {
-    id: 'btc',
-    label: 'Bitcoin (BTC / Lightning)',
-    badge: 'Native Crypto',
-    subtitle: 'On-chain SegWit/Taproot or instant Lightning Layer-2 settlement.',
-    icon: '⚡',
-  },
-  {
-    id: 'eth',
-    label: 'Ethereum (ETH / ERC-20)',
-    badge: 'Smart Contract',
-    subtitle: 'Direct Web3 wallet or exchange transfer to institutional vaults.',
-    icon: '🔷',
-  },
-  {
-    id: 'starknet',
-    label: 'Starknet (STRK / ETH)',
-    badge: 'ZK-Rollup L2',
-    subtitle: 'Native Braavos / Argent X Starknet L2 transfer with near-zero gas.',
-    icon: '🌟',
-  },
-  {
-    id: 'wire',
-    label: 'Bank Wire Transfer (USD / EUR / GBP)',
-    badge: 'Institutional',
-    subtitle: 'FedWire, SWIFT, SEPA corporate custody execution with dedicated IBAN.',
-    icon: '🏦',
-  },
-  {
-    id: 'card',
-    label: 'Credit / Debit Card (Apple & Google Pay)',
-    badge: 'Instant On-Ramp',
-    subtitle: 'Direct checkout via regulated institutional fiat gateway with 0% platform fee.',
-    icon: '💳',
+    id: 'metamask',
+    label: 'MetaMask Web3 Wallet (Only Official Payment Gateway)',
+    badge: 'Required Gateway',
+    subtitle: 'Exclusive payment rail. Instant Web3 deposit settlement via MetaMask.',
+    icon: '🦊',
   },
 ];
 
@@ -143,7 +108,7 @@ export default function GrandOpeningWishlistPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [country, setCountry] = useState('United States');
   const [investmentTier, setInvestmentTier] = useState('$1,000 – $2,500');
-  const [paymentMethod, setPaymentMethod] = useState('USDT / USDC (Stablecoins)');
+  const [paymentMethod, setPaymentMethod] = useState('MetaMask Web3 Wallet (Only Official Payment Gateway)');
   const [investorType, setInvestorType] = useState('Individual / Private Investor ($50+ Starter)');
   const [primaryInterest, setPrimaryInterest] = useState(STRATEGY_INTERESTS[0]);
   const [telegramHandle, setTelegramHandle] = useState('');

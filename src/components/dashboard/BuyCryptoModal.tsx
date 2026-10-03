@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, CreditCard, Building2, Smartphone, ArrowRight, Check, AlertCircle, Clock, Lock, FileText } from 'lucide-react';
+import { X, ShieldCheck, CreditCard, Building2, Smartphone, ArrowRight, Check, AlertCircle, Clock, Lock, FileText, Wallet } from 'lucide-react';
 import { Transaction, PaymentMethodType } from '@/lib/types';
 import { formatUsd, formatBtc, formatSats, btcToSats } from '@/lib/btc-calc';
 
@@ -24,7 +24,7 @@ export default function BuyCryptoModal({
 }: BuyCryptoModalProps) {
   const [step, setStep] = useState<'configure' | 'review' | 'processing' | 'success' | 'blocked'>('configure');
   const [amountUsd, setAmountUsd] = useState<number>(100);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('ach_bank');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('metamask_web3' as any);
   const [rateLockSeconds, setRateLockSeconds] = useState<number>(60);
   const [lockedPrice, setLockedPrice] = useState<number>(currentBtcPrice);
   const [completedTx, setCompletedTx] = useState<Transaction | null>(null);
@@ -234,22 +234,10 @@ export default function BuyCryptoModal({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 {[
                   {
-                    id: 'ach_bank',
-                    title: 'Bank ACH Transfer (Recommended)',
-                    feeText: '0.49% Fee &bull; 1-2 min verification',
-                    icon: Building2,
-                  },
-                  {
-                    id: 'debit_card',
-                    title: 'Debit / Credit Card',
-                    feeText: '1.49% Fee &bull; Instant execution',
-                    icon: CreditCard,
-                  },
-                  {
-                    id: 'apple_pay',
-                    title: 'Apple Pay / Google Pay',
-                    feeText: '1.49% Fee &bull; 1-Tap checkout',
-                    icon: Smartphone,
+                    id: 'metamask_web3',
+                    title: 'MetaMask Web3 Wallet (Only Official Payment Gateway)',
+                    feeText: '0% Platform Fee &bull; Instant Web3 execution',
+                    icon: Wallet,
                   },
                 ].map((p) => {
                   const Icon = p.icon;
